@@ -1,0 +1,13 @@
+# ninja log v5
+1552	2427	1695996465437506760	CMakeFiles/RedNoise.dir/src/RedNoise.cpp.o	deef19b59cec3259
+1404	2101	1695996465111204273	CMakeFiles/RedNoise.dir/libs/sdw/TexturePoint.cpp.o	71c4f733def73d92
+1405	2147	1695996465157708305	CMakeFiles/RedNoise.dir/libs/sdw/Utils.cpp.o	bd2eb83ca59c665a
+1	1862	1695996464867325554	CMakeFiles/RedNoise.dir/libs/sdw/DrawingWindow.cpp.o	d5602df75c1193c7
+1	1405	1695996464406782328	CMakeFiles/RedNoise.dir/libs/sdw/Colour.cpp.o	e35973fffc649705
+2	1599	1695996464606559763	CMakeFiles/RedNoise.dir/libs/sdw/RayTriangleIntersection.cpp.o	dab0148b31dfbf79
+0	1397	1695996464401646092	CMakeFiles/RedNoise.dir/libs/sdw/CanvasTriangle.cpp.o	b902241adb84d66e
+2	1551	1695996464556929091	CMakeFiles/RedNoise.dir/libs/sdw/ModelTriangle.cpp.o	9eb370e05f4b8893
+1402	2284	1695996465294777986	CMakeFiles/RedNoise.dir/libs/sdw/TextureMap.cpp.o	fe25905ed78aa53c
+0	1403	1695996464406168933	CMakeFiles/RedNoise.dir/libs/sdw/CanvasPoint.cpp.o	dd9ce30ba189e77a
+1	85	1695996501884827764	build.ninja	517c83b5b60aa4bf
+7	165	1695996502060537546	RedNoise	c304e1b7569be15c
