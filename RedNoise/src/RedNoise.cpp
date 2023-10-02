@@ -74,7 +74,7 @@ void drawColour(DrawingWindow &window){
     glm::vec3 topRight(0, 0, 255);       // blue
     glm::vec3 bottomRight(0, 255, 0);    // green
     glm::vec3 bottomLeft(255, 255, 0);   // yellow
-    vector<vec3> results;
+    vec3 results;
     vector<vec3> Left = interpolateThreeElementValues(topLeft,bottomLeft,window.height);
     vector<vec3> Right = interpolateThreeElementValues(topRight,bottomRight,window.height);
     for (size_t y = 0; y < window.height; y++) {
@@ -82,8 +82,8 @@ void drawColour(DrawingWindow &window){
             vec3 left = Left[y];
             vec3 right = Right[y];
             vector<vec3> row = interpolateThreeElementValues(left,right,window.width);
-            vec3 currentColour = row[x];
-            uint32_t colour = (255 << 24) + (int(currentColour.x) << 16) + (int(currentColour.y) << 8) + int(currentColour.z);
+            results = row[x];
+            uint32_t colour = (255 << 24) + (int(results.x) << 16) + (int(results.y) << 8) + int(results.z);
             window.setPixelColour(x, y, colour);
         }
     }
