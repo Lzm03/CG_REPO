@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
     float focalLength = 2.0f;
 //    drawPoint(triangles,cameraPosition,focalLength,window);
 //    drawWireframeModel(triangles,cameraPosition,focalLength,window);
-    drawFilledModel(triangles,cameraPosition,focalLength,window);
+    drawRenderModel(triangles,cameraPosition,focalLength,window);
 
 //  drawColour(window);
     while (true) {

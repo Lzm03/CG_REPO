@@ -30,4 +30,4 @@ void drawPoint(vector<ModelTriangle> triangles,vec3 cameraPosition,float focalLe
 void drawWireframe(ModelTriangle triangle, vec3 cameraPosition, float focalLength, DrawingWindow &window);
 void drawWireframeModel(vector<ModelTriangle> triangles, vec3 cameraPosition, float focalLength, DrawingWindow &window);
 void drawTriangleModel(ModelTriangle triangle, vec3 cameraPosition, float focalLength, DrawingWindow &window, std::vector<std::vector<float>>& depthBuffer);
-void drawFilledModel(vector<ModelTriangle> triangles, vec3 cameraPosition, float focalLength, DrawingWindow &window);
+void drawRenderModel(vector<ModelTriangle> triangles, vec3 cameraPosition, float focalLength, DrawingWindow &window);

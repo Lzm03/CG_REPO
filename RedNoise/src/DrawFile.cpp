@@ -342,7 +342,7 @@ void drawTriangleModel(ModelTriangle triangle, vec3 cameraPosition, float focalL
     drawRenderTriangle(canvasTriangle, inputColour, window, depthBuffer);
 }
 
-void drawFilledModel(vector<ModelTriangle> triangles, vec3 cameraPosition, float focalLength, DrawingWindow &window) {
+void drawRenderModel(vector<ModelTriangle> triangles, vec3 cameraPosition, float focalLength, DrawingWindow &window) {
     int width = window.width;
     int height = window.height;
     std::vector<std::vector<float>> depthBuffer(height, std::vector<float>(width, std::numeric_limits<float>::max()));
