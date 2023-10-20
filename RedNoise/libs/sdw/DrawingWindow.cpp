@@ -73,6 +73,7 @@ bool DrawingWindow::pollForInputEvents(SDL_Event &event) {
 	return false;
 }
 
+
 void DrawingWindow::setPixelColour(size_t x, size_t y, uint32_t colour) {
 	if ((x >= width) || (y >= height)) {
 		std::cout << x << "," << y << " not on visible screen area" << std::endl;

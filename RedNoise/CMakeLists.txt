@@ -35,7 +35,18 @@ add_executable(RedNoise
         libs/sdw/TextureMap.cpp
         libs/sdw/TexturePoint.cpp
         libs/sdw/Utils.cpp
-        src/RedNoise.cpp)
+        src/RedNoise.cpp
+        src/DrawFile.h
+        src/DrawFile.cpp
+        src/Interpolate.h
+        src/Interpolate.cpp
+        src/LoadFile.h
+        src/LoadFile.cpp
+        src/GetCanvasIntersectionPoint.h
+        src/GetCanvasintersectionPoint.cpp
+        src/CalculateDepth.h
+        src/CalculateDepth.cpp
+)
 
 if (MSVC)
     target_compile_options(RedNoise

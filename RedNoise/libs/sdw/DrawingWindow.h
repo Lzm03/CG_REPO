@@ -30,3 +30,4 @@ public:
 };
 
 void printMessageAndQuit(const std::string &message, const char *error);
+
