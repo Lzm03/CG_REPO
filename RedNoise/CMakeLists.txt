@@ -44,8 +44,8 @@ add_executable(RedNoise
         src/LoadFile.cpp
         src/GetCanvasIntersectionPoint.h
         src/GetCanvasintersectionPoint.cpp
-        src/CalculateDepth.h
-        src/CalculateDepth.cpp
+        src/CameraPosition.h
+        src/CameraPosition.cpp
 )
 
 if (MSVC)

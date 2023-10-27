@@ -1,9 +1,10 @@
 #include "DrawFile.h"
 #include "Interpolate.h"
 #include "LoadFile.h"
+#include "CameraPosition.h"
 
-#define WIDTH 320
-#define HEIGHT 240
+#define WIDTH 320 * 4
+#define HEIGHT 240 * 4
 
 using namespace std;
 using namespace glm;
@@ -19,6 +20,8 @@ void handleEvent(SDL_Event event, DrawingWindow &window) {
 		window.saveBMP("output.bmp");
 	}
 }
+
+
 
 int main(int argc, char *argv[]) {
     DrawingWindow window = DrawingWindow(WIDTH, HEIGHT, false);
@@ -41,16 +44,11 @@ int main(int argc, char *argv[]) {
         cout << endl;
     }
 
+    vec3 cameraPosition = vec3{0.0f, 0.0f, 4.0f};
     string objFileName = "../cornell-box.obj";
     float scalingFactor = 0.35;
     vector<ModelTriangle> triangles = loadObjFile(objFileName, scalingFactor);
-
-
-    vec3 cameraPosition = vec3{0.0f, 0.0f, 4.0f};
     float focalLength = 2.0f;
-//    drawPoint(triangles,cameraPosition,focalLength,window);
-//    drawWireframeModel(triangles,cameraPosition,focalLength,window);
-    drawRenderModel(triangles,cameraPosition,focalLength,window);
 
 //  drawColour(window);
     while (true) {
@@ -65,6 +63,8 @@ int main(int argc, char *argv[]) {
             else if(event.key.keysym.sym == SDLK_f) drawFilledTriangle(input_triangle, Colour{rand()%256,rand()%256,rand()%256},Colour{255,255,255},window);
         }
 
+        Change_cameraPosition(triangles,cameraPosition,event,focalLength,window);
+        orbit(cameraPosition);
 //        TextureMap texture = TextureMap("texture.ppm");
 //        CanvasPoint v0(160, 10);
 //        CanvasPoint v1(300, 230);

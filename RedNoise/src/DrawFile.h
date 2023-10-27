@@ -6,13 +6,11 @@
 #include <CanvasTriangle.h>
 #include <TextureMap.h>
 #include <ModelTriangle.h>
-#include "CalculateDepth.h"
 
 using namespace std;
 using namespace glm;
 
 
-// 函数声明
 void draw(DrawingWindow &window);
 void drawColour(DrawingWindow &window);
 void drawColour(DrawingWindow &window);
@@ -27,7 +25,7 @@ void drawFilledTriangle(CanvasTriangle triangle, Colour input_colour, Colour lin
 void drawTexturedTriangle(CanvasTriangle triangle, TextureMap texture, DrawingWindow &window);
 void drawRenderTriangle(CanvasTriangle triangle, Colour input_colour, DrawingWindow &window,std::vector<std::vector<float>>& depthBuffer);
 void drawPoint(vector<ModelTriangle> triangles,vec3 cameraPosition,float focalLength,DrawingWindow &window);
-void drawWireframe(ModelTriangle triangle, vec3 cameraPosition, float focalLength, DrawingWindow &window);
-void drawWireframeModel(vector<ModelTriangle> triangles, vec3 cameraPosition, float focalLength, DrawingWindow &window);
+void drawWireframe(ModelTriangle triangle, vec3 cameraPosition, float focalLength, DrawingWindow &window, mat3 cameraOrientation);
+void drawWireframeModel(vector<ModelTriangle> triangles, vec3 cameraPosition, float focalLength, DrawingWindow &window,mat3 cameraOrientation);
 void drawTriangleModel(ModelTriangle triangle, vec3 cameraPosition, float focalLength, DrawingWindow &window, std::vector<std::vector<float>>& depthBuffer);
-void drawRenderModel(vector<ModelTriangle> triangles, vec3 cameraPosition, float focalLength, DrawingWindow &window);
+void drawRenderModel(vector<ModelTriangle> triangles, vec3 cameraPosition, float focalLength, DrawingWindow &window, mat3 cameraOrientation);

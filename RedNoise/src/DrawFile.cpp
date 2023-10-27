@@ -51,7 +51,7 @@ void drawline(CanvasPoint& from, CanvasPoint& to, Colour colour, DrawingWindow &
         float x = from.x + (xStepSize * i);
         float y = from.y + (yStepSize * i);
         uint32_t Colour = (255 << 24) + (colour.red << 16) + (colour.green << 8) + colour.blue;
-        window.setPixelColour(round(x), round(y), Colour);
+        window.setPixelColour(x, y, Colour);
     }
 }
 
@@ -96,11 +96,11 @@ void drawHorizontalLine(DrawingWindow &window) {
     drawline(from,to,Colour{255,255,255},window);
 }
 
-void drawlineWithDepth(CanvasPoint& from, CanvasPoint& to, Colour colour, DrawingWindow &window, std::vector<std::vector<float>>& depthBuffer) {
+void drawlineWithDepth(CanvasPoint& from, CanvasPoint& to, Colour colour, DrawingWindow &window, vector<vector<float>>& depthBuffer) {
     float xDiff = to.x - from.x;
     float yDiff = to.y - from.y;
     float zDiff = to.depth - from.depth;
-    float numberOfSteps = 5 * std::max(abs(xDiff), abs(yDiff));
+    float numberOfSteps = 10 * std::max(abs(xDiff), abs(yDiff));
     float xStepSize = xDiff/numberOfSteps;
     float yStepSize = yDiff/numberOfSteps;
     float zStepSize = zDiff/numberOfSteps;
@@ -112,12 +112,13 @@ void drawlineWithDepth(CanvasPoint& from, CanvasPoint& to, Colour colour, Drawin
 
         int roundedX = round(x);
         int roundedY = round(y);
-
-            if (z < depthBuffer[roundedY][roundedX]) {
+        if (roundedX >= 0 && roundedY >= 0 && roundedX < window.width && roundedY < window.height ){
+            if (z < depthBuffer[roundedX][roundedY]) {
                 uint32_t ColourVal = (255 << 24) + (colour.red << 16) + (colour.green << 8) + colour.blue;
-                window.setPixelColour(roundedX, roundedY, ColourVal);
-                depthBuffer[roundedY][roundedX] = z;
+                window.setPixelColour(round(x), round(y), ColourVal);
+                depthBuffer[roundedX][roundedY] = z;
             }
+        }
     }
 }
 
@@ -170,84 +171,84 @@ void drawFilledTriangle(CanvasTriangle triangle, Colour input_colour, Colour lin
 }
 
 // Week3 Task 5
-void drawTexturedTriangle(CanvasTriangle triangle, TextureMap texture, DrawingWindow &window) {
-    // Sort vertices by y-coordinate
-    if (triangle.v0().y > triangle.v1().y) swap(triangle.v0(), triangle.v1());
-    if (triangle.v0().y > triangle.v2().y) swap(triangle.v0(), triangle.v2());
-    if (triangle.v1().y > triangle.v2().y) swap(triangle.v1(), triangle.v2());
-
-    CanvasPoint top = triangle.v0();
-    CanvasPoint middle = triangle.v1();
-    CanvasPoint bottom = triangle.v2();
-
-    // Calculate slopes for the top and bottom edges
-    float slope1 = (middle.x - top.x) / (middle.y - top.y);
-    float slope2 = (bottom.x - top.x) / (bottom.y - top.y);
-
-    float left_x = top.x;
-    float right_x = top.x;
-
-    // First part of triangle (top to middle)
-    for (int y = top.y; y <= middle.y; ++y) {
-        // Calculate the corresponding texturePoints for CanvasPoints
-        float t1 = (y - top.y) / (middle.y - top.y);
-        float t2 = (y - top.y) / (bottom.y - top.y);
-        float texX1 = top.texturePoint.x + (middle.texturePoint.x - top.texturePoint.x) * t1;
-        float texX2 = top.texturePoint.x + (bottom.texturePoint.x - top.texturePoint.x) * t2;
-        float texY1 = top.texturePoint.y + (middle.texturePoint.y - top.texturePoint.y) * t1;
-        float texY2 = top.texturePoint.y + (bottom.texturePoint.y - top.texturePoint.y) * t2;
-
-        // Draw the horizontal line with texture mapping
-        for (int x = round(left_x); x <= round(right_x); ++x) {
-            // Interpolate t based on the current x position
-            float t = (x - left_x) / (right_x - left_x);
-            int texX = static_cast<int>(texX1 + (texX2 - texX1) * t);
-            int texY = static_cast<int>(texY1 + (texY2 - texY1) * t);
-
-            // Calculate the index to access the texture pixel
-            if (texX >= 0 && texX < texture.width && texY >= 0 && texY < texture.height) {
-                int index = texY * texture.width + texX;
-                window.setPixelColour(x, y, texture.pixels[index]);
-            }
-        }
-
-        left_x += slope1;
-        right_x += slope2;
-    }
-
-    // Initialize left and right x-coordinates for the bottom edge
-    left_x = middle.x;
-    float slope3 = (bottom.x - middle.x) / (bottom.y - middle.y);
-
-    // Second part of triangle (middle to bottom)
-    for (int y = middle.y + 1; y <= bottom.y; ++y) {
-        // Calculate the corresponding texture coordinates for Canvas Points
-        float t1 = (y - middle.y) / (bottom.y - middle.y);
-        float t2 = (y - top.y) / (bottom.y - top.y);
-        float texX1 = middle.texturePoint.x + (bottom.texturePoint.x - middle.texturePoint.x) * t1;
-        float texX2 = top.texturePoint.x + (bottom.texturePoint.x - top.texturePoint.x) * t2;
-        float texY1 = middle.texturePoint.y + (bottom.texturePoint.y - middle.texturePoint.y) * t1;
-        float texY2 = top.texturePoint.y + (bottom.texturePoint.y - top.texturePoint.y) * t2;
-
-        // Draw the horizontal line with texture mapping
-        for (int x = round(left_x); x <= round(right_x); ++x) {
-            // Interpolate t based on the current x position
-            float t = (x - left_x) / (right_x - left_x);
-            int texX = static_cast<int>(texX1 + (texX2 - texX1) * t);
-            int texY = static_cast<int>(texY1 + (texY2 - texY1) * t);
-
-            // Calculate the index to access the texture pixel
-
-            if (texX >= 0 && texX < texture.width && texY >= 0 && texY < texture.height) {
-                int index = texY * texture.width + texX;
-                window.setPixelColour(x, y, texture.pixels[index]);
-            }
-        }
-        left_x += slope3;
-        right_x += slope2;
-    }
-    drawTriangle(triangle,Colour{255,255,255},window);
-}
+//void drawTexturedTriangle(CanvasTriangle triangle, TextureMap texture, DrawingWindow &window) {
+//    // Sort vertices by y-coordinate
+//    if (triangle.v0().y > triangle.v1().y) swap(triangle.v0(), triangle.v1());
+//    if (triangle.v0().y > triangle.v2().y) swap(triangle.v0(), triangle.v2());
+//    if (triangle.v1().y > triangle.v2().y) swap(triangle.v1(), triangle.v2());
+//
+//    CanvasPoint top = triangle.v0();
+//    CanvasPoint middle = triangle.v1();
+//    CanvasPoint bottom = triangle.v2();
+//
+//    // Calculate slopes for the top and bottom edges
+//    float slope1 = (middle.x - top.x) / (middle.y - top.y);
+//    float slope2 = (bottom.x - top.x) / (bottom.y - top.y);
+//
+//    float left_x = top.x;
+//    float right_x = top.x;
+//
+//    // First part of triangle (top to middle)
+//    for (int y = top.y; y <= middle.y; ++y) {
+//        // Calculate the corresponding texturePoints for CanvasPoints
+//        float t1 = (y - top.y) / (middle.y - top.y);
+//        float t2 = (y - top.y) / (bottom.y - top.y);
+//        float texX1 = top.texturePoint.x + (middle.texturePoint.x - top.texturePoint.x) * t1;
+//        float texX2 = top.texturePoint.x + (bottom.texturePoint.x - top.texturePoint.x) * t2;
+//        float texY1 = top.texturePoint.y + (middle.texturePoint.y - top.texturePoint.y) * t1;
+//        float texY2 = top.texturePoint.y + (bottom.texturePoint.y - top.texturePoint.y) * t2;
+//
+//        // Draw the horizontal line with texture mapping
+//        for (int x = round(left_x); x <= round(right_x); ++x) {
+//            // Interpolate t based on the current x position
+//            float t = (x - left_x) / (right_x - left_x);
+//            int texX = static_cast<int>(texX1 + (texX2 - texX1) * t);
+//            int texY = static_cast<int>(texY1 + (texY2 - texY1) * t);
+//
+//            // Calculate the index to access the texture pixel
+//            if (texX >= 0 && texX < texture.width && texY >= 0 && texY < texture.height) {
+//                int index = texY * texture.width + texX;
+//                window.setPixelColour(x, y, texture.pixels[index]);
+//            }
+//        }
+//
+//        left_x += slope1;
+//        right_x += slope2;
+//    }
+//
+//    // Initialize left and right x-coordinates for the bottom edge
+//    left_x = middle.x;
+//    float slope3 = (bottom.x - middle.x) / (bottom.y - middle.y);
+//
+//    // Second part of triangle (middle to bottom)
+//    for (int y = middle.y + 1; y <= bottom.y; ++y) {
+//        // Calculate the corresponding texture coordinates for Canvas Points
+//        float t1 = (y - middle.y) / (bottom.y - middle.y);
+//        float t2 = (y - top.y) / (bottom.y - top.y);
+//        float texX1 = middle.texturePoint.x + (bottom.texturePoint.x - middle.texturePoint.x) * t1;
+//        float texX2 = top.texturePoint.x + (bottom.texturePoint.x - top.texturePoint.x) * t2;
+//        float texY1 = middle.texturePoint.y + (bottom.texturePoint.y - middle.texturePoint.y) * t1;
+//        float texY2 = top.texturePoint.y + (bottom.texturePoint.y - top.texturePoint.y) * t2;
+//
+//        // Draw the horizontal line with texture mapping
+//        for (int x = round(left_x); x <= round(right_x); ++x) {
+//            // Interpolate t based on the current x position
+//            float t = (x - left_x) / (right_x - left_x);
+//            int texX = static_cast<int>(texX1 + (texX2 - texX1) * t);
+//            int texY = static_cast<int>(texY1 + (texY2 - texY1) * t);
+//
+//            // Calculate the index to access the texture pixel
+//
+//            if (texX >= 0 && texX < texture.width && texY >= 0 && texY < texture.height) {
+//                int index = texY * texture.width + texX;
+//                window.setPixelColour(x, y, texture.pixels[index]);
+//            }
+//        }
+//        left_x += slope3;
+//        right_x += slope2;
+//    }
+//    drawTriangle(triangle,Colour{255,255,255},window);
+//}
 
 void drawRenderTriangle(CanvasTriangle triangle, Colour input_colour, DrawingWindow &window,vector<std::vector<float>>& depthBuffer) {
     if (triangle.v0().y > triangle.v1().y) swap(triangle.v0(), triangle.v1());
@@ -258,96 +259,100 @@ void drawRenderTriangle(CanvasTriangle triangle, Colour input_colour, DrawingWin
     CanvasPoint bottom = triangle.v2();
     float slope1 = (middle.x - top.x) / (middle.y - top.y);
     float slope2 = (bottom.x - top.x) / (bottom.y - top.y);
-//    float depth_slope1 = (middle.depth - top.depth) / (middle.y - top.y);
-//    float depth_slope2 = (bottom.depth - top.depth) / (bottom.y - top.y);
+    float depth_slope1 = (middle.depth - top.depth) / (middle.y - top.y);
+    float depth_slope2 = (bottom.depth - top.depth) / (bottom.y - top.y);
     float left_x = top.x;
     float right_x = top.x;
     float left_depth = top.depth;
     float right_depth = top.depth;
 
     for (float y = top.y; y < middle.y; ++y) {
-        CanvasPoint from(left_x, y, left_depth);
-        CanvasPoint to(right_x, y, right_depth);
+        CanvasPoint from(round(left_x), round(y), left_depth);
+        CanvasPoint to(round(right_x), round(y), right_depth);
         drawlineWithDepth(from, to, input_colour, window, depthBuffer);
 
         right_x += slope1;
         left_x += slope2;
+
+        left_depth += depth_slope2;
+        right_depth += depth_slope1;
     }
 
     right_x = middle.x;
     float slope3 = (bottom.x - middle.x) / (bottom.y - middle.y);
-//    float depth_slope3 = (bottom.depth - middle.depth) / (bottom.y - middle.y);
+    float depth_slope3 = (bottom.depth - middle.depth) / (bottom.y - middle.y);
+
 
     for (float y = middle.y; y <= bottom.y; y++) {
-        CanvasPoint from(left_x, y, left_depth);
-        CanvasPoint to(right_x, y, right_depth);
+        CanvasPoint from(round(left_x), round(y), left_depth);
+        CanvasPoint to(round(right_x), round(y), right_depth);
         drawlineWithDepth(from, to, input_colour, window, depthBuffer);
         right_x += slope3;
         left_x += slope2;
+
+        left_depth += depth_slope2;
+        right_depth += depth_slope3;
     }
 }
 
-void drawPoint(vector<ModelTriangle> triangles,vec3 cameraPosition,float focalLength,DrawingWindow &window){
-    for (int i = 0; i < triangles.size(); ++i) {
-        for (int j = 0; j < 3; ++j) {
-            vec3 vertexPosition = triangles[i].vertices[j];
-            float scaling_factor = 186;
-            vec2 canvasPoint = getCanvasIntersectionPoint(cameraPosition, vertexPosition,scaling_factor,focalLength,window.width,window.height);
-            cout << "("<< canvasPoint.x << "," << canvasPoint.y << ")" << endl;
-            // Flip the Y-axis
-            Colour colour = Colour{255, 255, 255};
-            uint32_t input_Colour = (255 << 24) + (colour.red << 16) + (colour.green << 8) + colour.blue;
-            window.setPixelColour(canvasPoint.x, canvasPoint.y, input_Colour);
-        }
-    }
-}
+//void drawPoint(vector<ModelTriangle> triangles,vec3 cameraPosition,float focalLength,DrawingWindow &window){
+//    for (int i = 0; i < triangles.size(); ++i) {
+//        for (int j = 0; j < 3; ++j) {
+//            vec3 vertexPosition = triangles[i].vertices[j];
+//            float scaling_factor = 186;
+//            vec2 canvasPoint = getCanvasIntersectionPoint(cameraPosition, vertexPosition,scaling_factor,focalLength,window.width,window.height);
+//            cout << "("<< canvasPoint.x << "," << canvasPoint.y << ")" << endl;
+//            // Flip the Y-axis
+//            Colour colour = Colour{255, 255, 255};
+//            uint32_t input_Colour = (255 << 24) + (colour.red << 16) + (colour.green << 8) + colour.blue;
+//            window.setPixelColour(canvasPoint.x, canvasPoint.y, input_Colour);
+//        }
+//    }
+//}
 
-void drawWireframe(ModelTriangle triangle, vec3 cameraPosition, float focalLength, DrawingWindow &window) {
+void drawWireframe(ModelTriangle triangle, vec3 cameraPosition, float focalLength, DrawingWindow &window, mat3 cameraOrientation) {
     CanvasPoint p1;
     CanvasPoint p2;
     for (int i = 0; i < 3; ++i) {
         vec3 vertexPosition1 = triangle.vertices[i];
         vec3 vertexPosition2 = triangle.vertices[(i + 1) % 3]; // Connect to the next vertex, wrapping around to the first.
         float scaling_factor = 186;
-        vec2 canvasPoint1 = getCanvasIntersectionPoint(cameraPosition, vertexPosition1, focalLength, scaling_factor, window.width, window.height);
-        vec2 canvasPoint2 = getCanvasIntersectionPoint(cameraPosition, vertexPosition2, focalLength,scaling_factor, window.width, window.height);
+        vec2 canvasPoint1 = getCanvasIntersectionPoint(cameraPosition, vertexPosition1, focalLength, scaling_factor, window.width, window.height,cameraOrientation);
+        vec2 canvasPoint2 = getCanvasIntersectionPoint(cameraPosition, vertexPosition2, focalLength,scaling_factor, window.width, window.height,cameraOrientation);
 
-        // Flip the Y-axis
-        canvasPoint1.x = window.width - canvasPoint1.x;
-        canvasPoint2.x = window.width - canvasPoint2.x;
         p1 = CanvasPoint{round(canvasPoint1.x),round(canvasPoint1.y)};
         p2 = CanvasPoint{round(canvasPoint2.x),round(canvasPoint2.y)};
 
-        drawline(p1,p2,Colour{255,255,255}, window);
+        drawline(p1,p2,triangle.colour, window);
     }
 }
 
-void drawWireframeModel(vector<ModelTriangle> triangles, vec3 cameraPosition, float focalLength, DrawingWindow &window) {
+void drawWireframeModel(vector<ModelTriangle> triangles, vec3 cameraPosition, float focalLength, DrawingWindow &window,mat3 cameraOrientation) {
     for (int i = 0; i < triangles.size(); ++i) {
-        drawWireframe(triangles[i], cameraPosition, focalLength, window);
+        drawWireframe(triangles[i], cameraPosition, focalLength, window,cameraOrientation);
     }
 }
 
-void drawTriangleModel(ModelTriangle triangle, vec3 cameraPosition, float focalLength, DrawingWindow &window, std::vector<std::vector<float>>& depthBuffer) {
+void drawTriangleModel(ModelTriangle triangle, vec3 cameraPosition, float focalLength, DrawingWindow &window, std::vector<std::vector<float>>& depthBuffer, mat3 cameraOrientation) {
     CanvasTriangle canvasTriangle;
     for (int i = 0; i < 3; ++i) {
         vec3 vertexPosition = triangle.vertices[i];
-        float scaling_factor = 185;
-        vec2 canvasPoint = getCanvasIntersectionPoint(cameraPosition, vertexPosition, focalLength, scaling_factor, window.width, window.height);
-        CanvasPoint p = CanvasPoint{canvasPoint.x, canvasPoint.y};
-        p.depth = calculateDepth(cameraPosition, vertexPosition);
+        float scaling_factor = 240.0f;
+        vec2 canvasPoint = getCanvasIntersectionPoint(cameraPosition, vertexPosition, focalLength, scaling_factor, window.width, window.height, cameraOrientation);
+        CanvasPoint p = CanvasPoint(canvasPoint.x, canvasPoint.y);
+        vec3 cameraSpaceVertex = cameraOrientation * (vertexPosition - cameraPosition);
+        p.depth = -cameraSpaceVertex.z;
         canvasTriangle.vertices[i] = p;
     }
     Colour inputColour = triangle.colour;
     drawRenderTriangle(canvasTriangle, inputColour, window, depthBuffer);
 }
 
-void drawRenderModel(vector<ModelTriangle> triangles, vec3 cameraPosition, float focalLength, DrawingWindow &window) {
+void drawRenderModel(vector<ModelTriangle> triangles, vec3 cameraPosition, float focalLength, DrawingWindow &window, mat3 cameraOrientation) {
     int width = window.width;
     int height = window.height;
-    std::vector<std::vector<float>> depthBuffer(height, std::vector<float>(width, std::numeric_limits<float>::max()));
-
+    vector<vector<float>> depthBuffer(width, vector<float>(height, numeric_limits<float>::infinity()));
     for (int i = 0; i < triangles.size(); ++i) {
-        drawTriangleModel(triangles[i], cameraPosition, focalLength, window, depthBuffer);
+        drawTriangleModel(triangles[i], cameraPosition, focalLength, window, depthBuffer, cameraOrientation);
     }
 }
