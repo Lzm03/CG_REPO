@@ -6,6 +6,8 @@
 #include <CanvasTriangle.h>
 #include <TextureMap.h>
 #include <ModelTriangle.h>
+#include "Interpolate.h"
+#include "RayTriangleIntersection.h"
 
 using namespace std;
 using namespace glm;
@@ -22,10 +24,10 @@ void drawHorizontalLine(DrawingWindow &window);
 void drawlineWithDepth(CanvasPoint& from, CanvasPoint& to, Colour colour, DrawingWindow &window, std::vector<std::vector<float>>& depthBuffer);
 void drawTriangle(CanvasTriangle triangle,Colour input_colour, DrawingWindow &window);
 void drawFilledTriangle(CanvasTriangle triangle, Colour input_colour, Colour line_Colour,DrawingWindow &window);
-void drawTexturedTriangle(CanvasTriangle triangle, TextureMap texture, DrawingWindow &window);
-void drawRenderTriangle(CanvasTriangle triangle, Colour input_colour, DrawingWindow &window,std::vector<std::vector<float>>& depthBuffer);
 void drawPoint(vector<ModelTriangle> triangles,vec3 cameraPosition,float focalLength,DrawingWindow &window);
-void drawWireframe(ModelTriangle triangle, vec3 cameraPosition, float focalLength, DrawingWindow &window, mat3 cameraOrientation);
-void drawWireframeModel(vector<ModelTriangle> triangles, vec3 cameraPosition, float focalLength, DrawingWindow &window,mat3 cameraOrientation);
-void drawTriangleModel(ModelTriangle triangle, vec3 cameraPosition, float focalLength, DrawingWindow &window, std::vector<std::vector<float>>& depthBuffer);
-void drawRenderModel(vector<ModelTriangle> triangles, vec3 cameraPosition, float focalLength, DrawingWindow &window, mat3 cameraOrientation);
+void drawWireframe(vector<ModelTriangle> &triangles, vec3 &cameraPosition, float focalLength, DrawingWindow &window, mat3 &cameraOrientation);
+void drawRasterised(ModelTriangle triangle, vec3 cameraPosition, float focalLength, DrawingWindow &window, std::vector<std::vector<float>>& depthBuffer, mat3 cameraOrientation);
+void drawRasterisedModel(vector<ModelTriangle> &triangles, vec3 &cameraPosition, float focalLength, DrawingWindow &window, mat3 &cameraOrientation);
+RayTriangleIntersection getClosestValidIntersection(vector<ModelTriangle> triangles,vec3 cameraPosition, vec3 rayDirection);
+void drawRayTracedScene(vector<ModelTriangle> &triangles, DrawingWindow &window, vec3 &cameraPosition, float focalLength, mat3 &cameraOrientation);
+

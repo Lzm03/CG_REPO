@@ -28,3 +28,37 @@ vector<vec3> interpolateThreeElementValues(vec3 from,vec3 to, int numberOfValues
     }
     return results;
 }
+
+vector<CanvasPoint> interpolateTwoElementValues(CanvasPoint from,CanvasPoint to, int numberOfValues){
+    vector<CanvasPoint> points;
+    float x_step = (to.x - from.x)/(numberOfValues-1);
+    float y_step = (to.y - from.y)/(numberOfValues-1);
+    float d_step = (to.depth - from.depth)/(numberOfValues-1);
+
+    CanvasPoint temp = from;
+    points.push_back(temp);
+
+    for (int i = 0; i < numberOfValues-1; i++) {
+        temp.x = temp.x + x_step;
+        temp.y = temp.y + y_step;
+        temp.depth = temp.depth + d_step;
+        points.push_back(temp);
+    }
+    return points;
+}
+
+//vector<TexturePoint> interpolateTwoElementValues(TexturePoint from, TexturePoint to, int numberOfValuess){
+//    vector<TexturePoint> points;
+//    float x_step = (to.x - from.x)/(numberOfValues-1);
+//    float y_step = (to.y - from.y)/(numberOfValues-1);
+//
+//    TexturePoint temp = from;
+//    points.push_back(temp);
+//
+//    for (int i = 0; i < numberOfValues-1; i++) {
+//        temp.x = temp.x + x_step;
+//        temp.y = temp.y + y_step;
+//        points.push_back(temp);
+//    }
+//    return points;
+//}

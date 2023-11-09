@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-struct TexturePoint {
+struct TexturePoint{
 	float x{};
 	float y{};
 

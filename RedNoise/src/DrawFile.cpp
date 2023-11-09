@@ -96,31 +96,31 @@ void drawHorizontalLine(DrawingWindow &window) {
     drawline(from,to,Colour{255,255,255},window);
 }
 
-void drawlineWithDepth(CanvasPoint& from, CanvasPoint& to, Colour colour, DrawingWindow &window, vector<vector<float>>& depthBuffer) {
-    float xDiff = to.x - from.x;
-    float yDiff = to.y - from.y;
-    float zDiff = to.depth - from.depth;
-    float numberOfSteps = 10 * std::max(abs(xDiff), abs(yDiff));
-    float xStepSize = xDiff/numberOfSteps;
-    float yStepSize = yDiff/numberOfSteps;
-    float zStepSize = zDiff/numberOfSteps;
-
-    for (float i=0.0; i<numberOfSteps; ++i) {
-        float x = from.x + (xStepSize * i);
-        float y = from.y + (yStepSize * i);
-        float z = from.depth + (zStepSize * i);
-
-        int roundedX = round(x);
-        int roundedY = round(y);
-        if (roundedX >= 0 && roundedY >= 0 && roundedX < window.width && roundedY < window.height ){
-            if (z < depthBuffer[roundedX][roundedY]) {
-                uint32_t ColourVal = (255 << 24) + (colour.red << 16) + (colour.green << 8) + colour.blue;
-                window.setPixelColour(round(x), round(y), ColourVal);
-                depthBuffer[roundedX][roundedY] = z;
-            }
-        }
-    }
-}
+//void drawlineWithDepth(CanvasPoint& from, CanvasPoint& to, Colour colour, DrawingWindow &window, vector<vector<float>>& depthBuffer) {
+//    float xDiff = to.x - from.x;
+//    float yDiff = to.y - from.y;
+//    float zDiff = to.depth - from.depth;
+//    float numberOfSteps = 10 * std::max(abs(xDiff), abs(yDiff));
+//    float xStepSize = xDiff/(numberOfSteps - 1);
+//    float yStepSize = yDiff/(numberOfSteps - 1);
+//    float zStepSize = zDiff/(numberOfSteps - 1);
+//
+//    for (float i=0.0; i<numberOfSteps - 1; ++i) {
+//        float x = from.x + (xStepSize * i);
+//        float y = from.y + (yStepSize * i);
+//        float z = from.depth + (zStepSize * i);
+//
+//        int roundedX = round(x);
+//        int roundedY = round(y);
+//        if (roundedX >= 0 && roundedY >= 0 && roundedX < window.width && roundedY < window.height ){
+//            if (z < depthBuffer[roundedX][roundedY]) {
+//                uint32_t ColourVal = (255 << 24) + (colour.red << 16) + (colour.green << 8) + colour.blue;
+//                window.setPixelColour(round(x), round(y), ColourVal);
+//                depthBuffer[roundedX][roundedY] = z;
+//            }
+//        }
+//    }
+//}
 
 // Week3 Task 3
 void drawTriangle(CanvasTriangle triangle,Colour input_colour, DrawingWindow &window){
@@ -142,7 +142,7 @@ void drawFilledTriangle(CanvasTriangle triangle, Colour input_colour, Colour lin
     float left_x = top.x;
     float right_x = top.x;
     // first part of triangle
-    for (float y = top.y; y < middle.y; ++y) {
+    for (float y = top.y; y <= middle.y; ++y) {
         // start from top point
         int startX = round(right_x);
         int endX = round(left_x);
@@ -170,8 +170,80 @@ void drawFilledTriangle(CanvasTriangle triangle, Colour input_colour, Colour lin
     drawTriangle(triangle,line_Colour,window);
 }
 
+bool is_shadow(RayTriangleIntersection intersection, vector<ModelTriangle> triangles) {
+    vec3 shadow_rayDirection = vec3(0.0, 0.5, 0.5) - intersection.intersectionPoint;
+    for(int i = 0; i < triangles.size(); i++) {
+        ModelTriangle triangle = triangles[i];
+        vec3 e0 = triangle.vertices[1] - triangle.vertices[0];
+        vec3 e1 = triangle.vertices[2] - triangle.vertices[0];
+        vec3 SPVector = intersection.intersectionPoint - triangle.vertices[0];
+        mat3 DEMatrix(-normalize(shadow_rayDirection), e0, e1);
+        vec3 possibleSolution = inverse(DEMatrix) * SPVector;
+        float t = possibleSolution.x, u = possibleSolution.y, v = possibleSolution.z;
+
+        if((u >= 0.0) && (u <= 1.0) && (v >= 0.0) && (v <= 1.0) && (u + v) <= 1.0) {
+            if(t < length(shadow_rayDirection) && t > 0.01 && i != intersection.triangleIndex) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+RayTriangleIntersection getClosestValidIntersection(vector<ModelTriangle> triangles, vec3 cameraPosition, vec3 rayDirection){
+    RayTriangleIntersection r;
+    r.distanceFromCamera = numeric_limits<float>::infinity();
+    for (int i = 0; i < triangles.size(); ++i) {
+        ModelTriangle triangle = triangles[i];
+        vec3 e0 = triangle.vertices[1] - triangle.vertices[0];
+        vec3 e1 = triangle.vertices[2] - triangle.vertices[0];
+        vec3 SPVector = cameraPosition - triangle.vertices[0];
+        mat3 DEMatrix(-rayDirection, e0, e1);
+        vec3 possibleSolution = inverse(DEMatrix) * SPVector;
+        float t = possibleSolution.x;
+        float u = possibleSolution.y;
+        float v = possibleSolution.z;
+        if (t > 0 && u >= 0 && u <= 1.0 && v >= 0.0 && v <= 1.0 && (u + v) <= 1.0){
+            if(r.distanceFromCamera > t) {
+                vec3 intersectionPoint = cameraPosition + possibleSolution.x * rayDirection;
+                float distanceFromCamera = t;
+                r = RayTriangleIntersection(intersectionPoint, distanceFromCamera, triangle, i);
+            }
+        }
+    }
+    return r;
+}
+
+vec3 getRayDirectionFromCanvas(int x, int y, int width, int height, float focalLength, float scalingFactor, mat3 cameraOrientation, vec3 &camerPosition) {
+    float ndcX = (x - (width / 2.0f)) / (focalLength * scalingFactor);
+    float ndcY = ((height / 2.0f) - y) / (focalLength * scalingFactor);
+    vec3 rayDirectionCameraSpace(ndcX , ndcY, focalLength);
+    vec3 rayDirectionWorldSpace = normalize(cameraOrientation * (rayDirectionCameraSpace - camerPosition));
+    return rayDirectionWorldSpace;
+}
+
+void drawRayTracedScene(vector<ModelTriangle> &triangles, DrawingWindow &window, vec3 &cameraPosition, float focalLength, mat3 &cameraOrientation) {
+    for (int y = 0; y < window.height; y++) {
+        for (int x = 0; x < window.width; x++) {
+            float scaling_factor = 180.0f;
+            vec3 rayDirection = getRayDirectionFromCanvas(x,y,window.width,window.height,focalLength,scaling_factor,cameraOrientation,cameraPosition);
+            RayTriangleIntersection intersection = getClosestValidIntersection(triangles, cameraPosition, rayDirection);
+            if (!isinf(intersection.distanceFromCamera)) {
+                Colour colour = intersection.intersectedTriangle.colour;
+                uint32_t ray_Color = (255 << 24) + (int(colour.red) << 16) + (int(colour.green) << 8) + int(colour.blue);
+                if (!is_shadow(intersection, triangles)) {
+                    window.setPixelColour(x, y, ray_Color);
+                } else {
+                    uint32_t shadowColor = (255 << 24) + (colour.red/3 << 16) + (colour.green/3 << 8) + colour.blue/3;
+                    window.setPixelColour(x, y, shadowColor);
+                }
+            }
+        }
+    }
+}
+
 // Week3 Task 5
-//void drawTexturedTriangle(CanvasTriangle triangle, TextureMap texture, DrawingWindow &window) {
+//void drawTexturedTriangle(CanvasTriangle triangle, TextureMap texture, DrawingWindow &window,vector<std::vector<float>>& depthBuffer) {
 //    // Sort vertices by y-coordinate
 //    if (triangle.v0().y > triangle.v1().y) swap(triangle.v0(), triangle.v1());
 //    if (triangle.v0().y > triangle.v2().y) swap(triangle.v0(), triangle.v2());
@@ -184,9 +256,13 @@ void drawFilledTriangle(CanvasTriangle triangle, Colour input_colour, Colour lin
 //    // Calculate slopes for the top and bottom edges
 //    float slope1 = (middle.x - top.x) / (middle.y - top.y);
 //    float slope2 = (bottom.x - top.x) / (bottom.y - top.y);
+//    float depth_slope1 = (middle.depth - top.depth) / (middle.y - top.y);
+//    float depth_slope2 = (bottom.depth - top.depth) / (bottom.y - top.y);
 //
 //    float left_x = top.x;
 //    float right_x = top.x;
+//    float left_depth = top.depth;
+//    float right_depth = top.depth;
 //
 //    // First part of triangle (top to middle)
 //    for (int y = top.y; y <= middle.y; ++y) {
@@ -211,7 +287,6 @@ void drawFilledTriangle(CanvasTriangle triangle, Colour input_colour, Colour lin
 //                window.setPixelColour(x, y, texture.pixels[index]);
 //            }
 //        }
-//
 //        left_x += slope1;
 //        right_x += slope2;
 //    }
@@ -247,53 +322,140 @@ void drawFilledTriangle(CanvasTriangle triangle, Colour input_colour, Colour lin
 //        left_x += slope3;
 //        right_x += slope2;
 //    }
-//    drawTriangle(triangle,Colour{255,255,255},window);
 //}
 
-void drawRenderTriangle(CanvasTriangle triangle, Colour input_colour, DrawingWindow &window,vector<std::vector<float>>& depthBuffer) {
+void drawTexturedTriangle(CanvasTriangle triangle, TextureMap texture, DrawingWindow &window, vector<vector<float>>& depthBuffer) {
+    // Sort vertices by y-coordinate
     if (triangle.v0().y > triangle.v1().y) swap(triangle.v0(), triangle.v1());
     if (triangle.v0().y > triangle.v2().y) swap(triangle.v0(), triangle.v2());
     if (triangle.v1().y > triangle.v2().y) swap(triangle.v1(), triangle.v2());
+
     CanvasPoint top = triangle.v0();
     CanvasPoint middle = triangle.v1();
     CanvasPoint bottom = triangle.v2();
+
+    // Calculate slopes and depth slopes for the edges
     float slope1 = (middle.x - top.x) / (middle.y - top.y);
     float slope2 = (bottom.x - top.x) / (bottom.y - top.y);
     float depth_slope1 = (middle.depth - top.depth) / (middle.y - top.y);
     float depth_slope2 = (bottom.depth - top.depth) / (bottom.y - top.y);
+
     float left_x = top.x;
     float right_x = top.x;
     float left_depth = top.depth;
     float right_depth = top.depth;
 
-    for (float y = top.y; y < middle.y; ++y) {
-        CanvasPoint from(round(left_x), round(y), left_depth);
-        CanvasPoint to(round(right_x), round(y), right_depth);
-        drawlineWithDepth(from, to, input_colour, window, depthBuffer);
+    // Draw the top to middle part of the triangle
+    for (int y = top.y; y <= middle.y; ++y) {
+        float t1 = (y - top.y) / (middle.y - top.y);
+        float t2 = (y - top.y) / (bottom.y - top.y);
+        float texX1 = top.texturePoint.x + (middle.texturePoint.x - top.texturePoint.x) * t1;
+        float texX2 = top.texturePoint.x + (bottom.texturePoint.x - top.texturePoint.x) * t2;
+        float texY1 = top.texturePoint.y + (middle.texturePoint.y - top.texturePoint.y) * t1;
+        float texY2 = top.texturePoint.y + (bottom.texturePoint.y - top.texturePoint.y) * t2;
 
-        right_x += slope1;
-        left_x += slope2;
+        // Draw horizontal line with texture and depth buffer checking
+        for (int x = round(left_x); x <= round(right_x); ++x) {
+            float t = (x - left_x) / (right_x - left_x);
+            float current_depth = left_depth + (right_depth - left_depth) * t;
+            if (x >= 0 && x < window.width && y >= 0 && y < window.height && current_depth < depthBuffer[y][x]) {
+                int texX = static_cast<int>(texX1 + (texX2 - texX1) * t);
+                int texY = static_cast<int>(texY1 + (texY2 - texY1) * t);
 
-        left_depth += depth_slope2;
-        right_depth += depth_slope1;
+                if (texX >= 0 && texX < texture.width && texY >= 0 && texY < texture.height) {
+                    int index = texY * texture.width + texX;
+                    window.setPixelColour(x, y, texture.pixels[index]);
+                    depthBuffer[y][x] = current_depth;
+                }
+            }
+        }
+        left_x += slope1;
+        right_x += slope2;
+        left_depth += depth_slope1;
+        right_depth += depth_slope2;
     }
 
-    right_x = middle.x;
+    // Reinitialize slopes for the bottom part of the triangle
+    left_x = middle.x;
     float slope3 = (bottom.x - middle.x) / (bottom.y - middle.y);
     float depth_slope3 = (bottom.depth - middle.depth) / (bottom.y - middle.y);
+    left_depth = middle.depth;
 
+    // Draw the middle to bottom part of the triangle
+    for (int y = middle.y + 1; y <= bottom.y; ++y) {
+        float t1 = (y - middle.y) / (bottom.y - middle.y);
+        float t2 = (y - top.y) / (bottom.y - top.y);
+        float texX1 = middle.texturePoint.x + (bottom.texturePoint.x - middle.texturePoint.x) * t1;
+        float texX2 = top.texturePoint.x + (bottom.texturePoint.x - top.texturePoint.x) * t2;
+        float texY1 = middle.texturePoint.y + (bottom.texturePoint.y - middle.texturePoint.y) * t1;
+        float texY2 = top.texturePoint.y + (bottom.texturePoint.y - top.texturePoint.y) * t2;
+        for (int x = round(left_x); x <= round(right_x); ++x) {
+            float t = (x - left_x) / (right_x - left_x);
+            float current_depth = left_depth + (right_depth - left_depth) * t;
+            if (x >= 0 && x < window.width && y >= 0 && y < window.height && current_depth < depthBuffer[y][x]) {
+                int texX = static_cast<int>(texX1 + (texX2 - texX1) * t);
+                int texY = static_cast<int>(texY1 + (texY2 - texY1) * t);
 
-    for (float y = middle.y; y <= bottom.y; y++) {
-        CanvasPoint from(round(left_x), round(y), left_depth);
-        CanvasPoint to(round(right_x), round(y), right_depth);
-        drawlineWithDepth(from, to, input_colour, window, depthBuffer);
-        right_x += slope3;
-        left_x += slope2;
+                if (texX >= 0 && texX < texture.width && texY >= 0 && texY < texture.height) {
+                    int index = texY * texture.width + texX;
+                    window.setPixelColour(x, y, texture.pixels[index]);
+                    depthBuffer[y][x] = current_depth;
+                }
+            }
+        }
+        left_x += slope3;
+        right_x += slope2;
+        left_depth += depth_slope3;
+        right_depth += depth_slope2;
 
-        left_depth += depth_slope2;
-        right_depth += depth_slope3;
     }
 }
+
+
+//void drawRenderTriangle(CanvasTriangle triangle, Colour input_colour, DrawingWindow &window,vector<std::vector<float>>& depthBuffer) {
+//    if (triangle.v0().y > triangle.v1().y) swap(triangle.v0(), triangle.v1());
+//    if (triangle.v0().y > triangle.v2().y) swap(triangle.v0(), triangle.v2());
+//    if (triangle.v1().y > triangle.v2().y) swap(triangle.v1(), triangle.v2());
+//    CanvasPoint top = triangle.v0();
+//    CanvasPoint middle = triangle.v1();
+//    CanvasPoint bottom = triangle.v2();
+//    float slope1 = (middle.x - top.x) / (middle.y - top.y);
+//    float slope2 = (bottom.x - top.x) / (bottom.y - top.y);
+//    float depth_slope1 = (middle.depth - top.depth) / (middle.y - top.y);
+//    float depth_slope2 = (bottom.depth - top.depth) / (bottom.y - top.y);
+//    float left_x = top.x;
+//    float right_x = top.x;
+//    float left_depth = top.depth;
+//    float right_depth = top.depth;
+//
+//    for (float y = top.y; y < middle.y; ++y) {
+//        CanvasPoint from(round(left_x), round(y), left_depth);
+//        CanvasPoint to(round(right_x), round(y), right_depth);
+//        drawlineWithDepth(from, to, input_colour, window, depthBuffer);
+//
+//        right_x += slope1;
+//        left_x += slope2;
+//
+//        left_depth += depth_slope2;
+//        right_depth += depth_slope1;
+//    }
+//
+//    right_x = middle.x;
+//    float slope3 = (bottom.x - middle.x) / (bottom.y - middle.y);
+//    float depth_slope3 = (bottom.depth - middle.depth) / (bottom.y - middle.y);
+//
+//
+//    for (float y = middle.y; y <= bottom.y; y++) {
+//        CanvasPoint from(round(left_x), round(y), left_depth);
+//        CanvasPoint to(round(right_x), round(y), right_depth);
+//        drawlineWithDepth(from, to, input_colour, window, depthBuffer);
+//        right_x += slope3;
+//        left_x += slope2;
+//
+//        left_depth += depth_slope2;
+//        right_depth += depth_slope3;
+//    }
+//}
 
 //void drawPoint(vector<ModelTriangle> triangles,vec3 cameraPosition,float focalLength,DrawingWindow &window){
 //    for (int i = 0; i < triangles.size(); ++i) {
@@ -310,49 +472,90 @@ void drawRenderTriangle(CanvasTriangle triangle, Colour input_colour, DrawingWin
 //    }
 //}
 
-void drawWireframe(ModelTriangle triangle, vec3 cameraPosition, float focalLength, DrawingWindow &window, mat3 cameraOrientation) {
+void drawWireframe(vector<ModelTriangle> &triangles, vec3 &cameraPosition, float focalLength, DrawingWindow &window, mat3 &cameraOrientation) {
     CanvasPoint p1;
     CanvasPoint p2;
     for (int i = 0; i < 3; ++i) {
-        vec3 vertexPosition1 = triangle.vertices[i];
-        vec3 vertexPosition2 = triangle.vertices[(i + 1) % 3]; // Connect to the next vertex, wrapping around to the first.
-        float scaling_factor = 186;
-        vec2 canvasPoint1 = getCanvasIntersectionPoint(cameraPosition, vertexPosition1, focalLength, scaling_factor, window.width, window.height,cameraOrientation);
-        vec2 canvasPoint2 = getCanvasIntersectionPoint(cameraPosition, vertexPosition2, focalLength,scaling_factor, window.width, window.height,cameraOrientation);
-
-        p1 = CanvasPoint{round(canvasPoint1.x),round(canvasPoint1.y)};
-        p2 = CanvasPoint{round(canvasPoint2.x),round(canvasPoint2.y)};
-
-        drawline(p1,p2,triangle.colour, window);
+        for (int j = 0; j < triangles.size(); ++j) {
+            ModelTriangle triangle = triangles[j];
+            vec3 vertexPosition1 = triangle.vertices[i];
+            vec3 vertexPosition2 = triangle.vertices[(i + 1) %3];
+            float scaling_factor = 320.0f;
+            vec2 canvasPoint1 = getCanvasIntersectionPoint(cameraPosition, vertexPosition1, focalLength, scaling_factor,
+                                                           window.width, window.height, cameraOrientation);
+            vec2 canvasPoint2 = getCanvasIntersectionPoint(cameraPosition, vertexPosition2, focalLength, scaling_factor,
+                                                           window.width, window.height, cameraOrientation);
+            p1 = CanvasPoint{round(canvasPoint1.x), round(canvasPoint1.y)};
+            p2 = CanvasPoint{round(canvasPoint2.x), round(canvasPoint2.y)};
+            drawline(p1, p2, triangle.colour, window);
+        }
     }
 }
 
-void drawWireframeModel(vector<ModelTriangle> triangles, vec3 cameraPosition, float focalLength, DrawingWindow &window,mat3 cameraOrientation) {
-    for (int i = 0; i < triangles.size(); ++i) {
-        drawWireframe(triangles[i], cameraPosition, focalLength, window,cameraOrientation);
+void drawRenderTriangle(CanvasTriangle triangle, Colour input_colour, DrawingWindow &window, vector<vector<float>>& depthBuffer) {
+    if (triangle.v0().y > triangle.v1().y) swap(triangle.v0(), triangle.v1());
+    if (triangle.v0().y > triangle.v2().y) swap(triangle.v0(), triangle.v2());
+    if (triangle.v1().y > triangle.v2().y) swap(triangle.v1(), triangle.v2());
+
+    CanvasPoint top = triangle.v0();
+    CanvasPoint middle = triangle.v1();
+    CanvasPoint bottom = triangle.v2();
+
+    int xMin = std::min({top.x, middle.x, bottom.x});
+    int xMax = std::max({top.x, middle.x, bottom.x});
+    int yMin = std::min({top.y, middle.y, bottom.y});
+    int yMax = std::max({top.y, middle.y, bottom.y});
+
+    float triangleArea = (top.x * (middle.y - bottom.y) + middle.x * (bottom.y - top.y) + bottom.x * (top.y - middle.y));
+    for (int y = yMin; y <= yMax; y++) {
+        for (int x = xMin; x <= xMax; x++) {
+            float lambda1 = ((x * (middle.y - bottom.y) + middle.x * (bottom.y - y) + bottom.x * (y - middle.y)) / triangleArea);
+            float lambda2 = ((top.x * (y - bottom.y) + x * (bottom.y - top.y) + bottom.x * (top.y - y)) / triangleArea);
+            float lambda3 = 1.0f - lambda1 - lambda2;
+
+            if (lambda1 >= 0 && lambda2 >= 0 && lambda3 >= 0) {
+                float depth = top.depth * lambda1 + middle.depth * lambda2 + bottom.depth * lambda3;
+                if (x >= 0 && y >= 0 && x < window.width && y < window.height && depth < depthBuffer[x][y]) {
+                    uint32_t colourVal = (255 << 24) + (input_colour.red << 16) + (input_colour.green << 8) + input_colour.blue;
+                    window.setPixelColour(x, y, colourVal);
+                    depthBuffer[x][y] = depth;
+                }
+            }
+        }
     }
 }
 
-void drawTriangleModel(ModelTriangle triangle, vec3 cameraPosition, float focalLength, DrawingWindow &window, std::vector<std::vector<float>>& depthBuffer, mat3 cameraOrientation) {
+void drawRasterised(ModelTriangle triangle, vec3 cameraPosition, float focalLength, DrawingWindow &window, vector<vector<float>>& depthBuffer, mat3 cameraOrientation) {
     CanvasTriangle canvasTriangle;
+    RayTriangleIntersection r;
     for (int i = 0; i < 3; ++i) {
         vec3 vertexPosition = triangle.vertices[i];
-        float scaling_factor = 240.0f;
+        float scaling_factor = 320.0f;
         vec2 canvasPoint = getCanvasIntersectionPoint(cameraPosition, vertexPosition, focalLength, scaling_factor, window.width, window.height, cameraOrientation);
-        CanvasPoint p = CanvasPoint(canvasPoint.x, canvasPoint.y);
         vec3 cameraSpaceVertex = cameraOrientation * (vertexPosition - cameraPosition);
-        p.depth = -cameraSpaceVertex.z;
-        canvasTriangle.vertices[i] = p;
+        canvasTriangle.vertices[i] = CanvasPoint(canvasPoint.x, canvasPoint.y, -cameraSpaceVertex.z);
+        canvasTriangle.vertices[i].texturePoint = triangle.texturePoints[i];
     }
+
     Colour inputColour = triangle.colour;
+    if (triangle.colour.name != ""){
+        TextureMap texture = TextureMap("../" + triangle.colour.name);
+        for(int i = 0; i < canvasTriangle.vertices.size(); i++) {
+            canvasTriangle.vertices[i].texturePoint.x *= texture.width;
+            canvasTriangle.vertices[i].texturePoint.y *= texture.height;
+        }
+        drawTexturedTriangle(canvasTriangle,texture,window,depthBuffer);
+    }
+    else {
     drawRenderTriangle(canvasTriangle, inputColour, window, depthBuffer);
 }
+}
 
-void drawRenderModel(vector<ModelTriangle> triangles, vec3 cameraPosition, float focalLength, DrawingWindow &window, mat3 cameraOrientation) {
+void drawRasterisedModel(vector<ModelTriangle> &triangles, vec3 &cameraPosition, float focalLength, DrawingWindow &window, mat3 &cameraOrientation) {
     int width = window.width;
     int height = window.height;
     vector<vector<float>> depthBuffer(width, vector<float>(height, numeric_limits<float>::infinity()));
     for (int i = 0; i < triangles.size(); ++i) {
-        drawTriangleModel(triangles[i], cameraPosition, focalLength, window, depthBuffer, cameraOrientation);
+        drawRasterised(triangles[i], cameraPosition, focalLength, window, depthBuffer, cameraOrientation);
     }
 }

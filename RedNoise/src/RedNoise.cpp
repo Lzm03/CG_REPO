@@ -9,6 +9,7 @@
 using namespace std;
 using namespace glm;
 
+
 void handleEvent(SDL_Event event, DrawingWindow &window) {
 	if (event.type == SDL_KEYDOWN) {
 		if (event.key.keysym.sym == SDLK_LEFT) std::cout << "LEFT" << std::endl;
@@ -45,11 +46,11 @@ int main(int argc, char *argv[]) {
     }
 
     vec3 cameraPosition = vec3{0.0f, 0.0f, 4.0f};
-    string objFileName = "../cornell-box.obj";
-    float scalingFactor = 0.35;
-    vector<ModelTriangle> triangles = loadObjFile(objFileName, scalingFactor);
+    float scalingFactor = 0.35f;
     float focalLength = 2.0f;
-
+    string textureFileName = "../cornell-box.obj";
+    string textureMaterial = "../cornell-box.mtl";
+    vector<ModelTriangle> triangles = loadObjFile(textureFileName, scalingFactor, loadMtlFile(textureMaterial));
 //  drawColour(window);
     while (true) {
 //        drawLineFromTopRightToCenter(window);
@@ -62,10 +63,10 @@ int main(int argc, char *argv[]) {
             if (event.key.keysym.sym == SDLK_u) drawTriangle(input_triangle, Colour{rand()%256,rand()%256,rand()%256}, window);
             else if(event.key.keysym.sym == SDLK_f) drawFilledTriangle(input_triangle, Colour{rand()%256,rand()%256,rand()%256},Colour{255,255,255},window);
         }
-
         Change_cameraPosition(triangles,cameraPosition,event,focalLength,window);
         orbit(cameraPosition);
-//        TextureMap texture = TextureMap("texture.ppm");
+
+//
 //        CanvasPoint v0(160, 10);
 //        CanvasPoint v1(300, 230);
 //        CanvasPoint v2(10, 150);
@@ -73,6 +74,7 @@ int main(int argc, char *argv[]) {
 //        v1.texturePoint = TexturePoint{395, 380};
 //        v2.texturePoint = TexturePoint{65, 330};
 //        CanvasTriangle triangle(v0, v1, v2);
+//        TextureMap texture = TextureMap("../texture.ppm");
 //        drawTexturedTriangle(triangle,texture,window);
 
         // We MUST poll for events - otherwise the window will freeze !
