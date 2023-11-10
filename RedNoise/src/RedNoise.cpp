@@ -48,8 +48,8 @@ int main(int argc, char *argv[]) {
     vec3 cameraPosition = vec3{0.0f, 0.0f, 4.0f};
     float scalingFactor = 0.35f;
     float focalLength = 2.0f;
-    string textureFileName = "../cornell-box.obj";
-    string textureMaterial = "../cornell-box.mtl";
+    string textureFileName = "cornell-box.obj";
+    string textureMaterial = "cornell-box.mtl";
     vector<ModelTriangle> triangles = loadObjFile(textureFileName, scalingFactor, loadMtlFile(textureMaterial));
 //  drawColour(window);
     while (true) {

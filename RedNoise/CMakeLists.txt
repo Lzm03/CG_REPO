@@ -37,15 +37,10 @@ add_executable(RedNoise
         libs/sdw/Utils.cpp
         src/RedNoise.cpp
         src/DrawFile.h
-        src/DrawFile.cpp
         src/Interpolate.h
-        src/Interpolate.cpp
         src/LoadFile.h
-        src/LoadFile.cpp
         src/GetCanvasIntersectionPoint.h
-        src/GetCanvasintersectionPoint.cpp
         src/CameraPosition.h
-        src/CameraPosition.cpp
 )
 
 if (MSVC)

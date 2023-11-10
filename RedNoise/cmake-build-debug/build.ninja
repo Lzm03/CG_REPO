@@ -119,41 +119,6 @@ build CMakeFiles/RedNoise.dir/src/RedNoise.cpp.o: CXX_COMPILER__RedNoise_unscann
   OBJECT_DIR = CMakeFiles/RedNoise.dir
   OBJECT_FILE_DIR = CMakeFiles/RedNoise.dir/src
 
-build CMakeFiles/RedNoise.dir/src/DrawFile.cpp.o: CXX_COMPILER__RedNoise_unscanned_Debug /Users/liuzhiming/Desktop/CG/CG_REPO-main/RedNoise/src/DrawFile.cpp || cmake_object_order_depends_target_RedNoise
-  DEP_FILE = CMakeFiles/RedNoise.dir/src/DrawFile.cpp.o.d
-  FLAGS = -g -std=gnu++14 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -fcolor-diagnostics -Wall -Wextra -Wcast-align -Wfatal-errors -Werror=return-type -Wno-unused-parameter -Wno-unused-variable -Wno-ignored-attributes -O2 -fno-omit-frame-pointer -g
-  INCLUDES = -I/opt/homebrew/Cellar/sdl2/2.28.3/include -I/Users/liuzhiming/Desktop/CG/CG_REPO-main/RedNoise/libs/glm-0.9.7.2 -I/Users/liuzhiming/Desktop/CG/CG_REPO-main/RedNoise/libs/sdw -isystem /opt/homebrew/Cellar/sdl2/2.28.3/include/SDL2
-  OBJECT_DIR = CMakeFiles/RedNoise.dir
-  OBJECT_FILE_DIR = CMakeFiles/RedNoise.dir/src
-
-build CMakeFiles/RedNoise.dir/src/Interpolate.cpp.o: CXX_COMPILER__RedNoise_unscanned_Debug /Users/liuzhiming/Desktop/CG/CG_REPO-main/RedNoise/src/Interpolate.cpp || cmake_object_order_depends_target_RedNoise
-  DEP_FILE = CMakeFiles/RedNoise.dir/src/Interpolate.cpp.o.d
-  FLAGS = -g -std=gnu++14 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -fcolor-diagnostics -Wall -Wextra -Wcast-align -Wfatal-errors -Werror=return-type -Wno-unused-parameter -Wno-unused-variable -Wno-ignored-attributes -O2 -fno-omit-frame-pointer -g
-  INCLUDES = -I/opt/homebrew/Cellar/sdl2/2.28.3/include -I/Users/liuzhiming/Desktop/CG/CG_REPO-main/RedNoise/libs/glm-0.9.7.2 -I/Users/liuzhiming/Desktop/CG/CG_REPO-main/RedNoise/libs/sdw -isystem /opt/homebrew/Cellar/sdl2/2.28.3/include/SDL2
-  OBJECT_DIR = CMakeFiles/RedNoise.dir
-  OBJECT_FILE_DIR = CMakeFiles/RedNoise.dir/src
-
-build CMakeFiles/RedNoise.dir/src/LoadFile.cpp.o: CXX_COMPILER__RedNoise_unscanned_Debug /Users/liuzhiming/Desktop/CG/CG_REPO-main/RedNoise/src/LoadFile.cpp || cmake_object_order_depends_target_RedNoise
-  DEP_FILE = CMakeFiles/RedNoise.dir/src/LoadFile.cpp.o.d
-  FLAGS = -g -std=gnu++14 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -fcolor-diagnostics -Wall -Wextra -Wcast-align -Wfatal-errors -Werror=return-type -Wno-unused-parameter -Wno-unused-variable -Wno-ignored-attributes -O2 -fno-omit-frame-pointer -g
-  INCLUDES = -I/opt/homebrew/Cellar/sdl2/2.28.3/include -I/Users/liuzhiming/Desktop/CG/CG_REPO-main/RedNoise/libs/glm-0.9.7.2 -I/Users/liuzhiming/Desktop/CG/CG_REPO-main/RedNoise/libs/sdw -isystem /opt/homebrew/Cellar/sdl2/2.28.3/include/SDL2
-  OBJECT_DIR = CMakeFiles/RedNoise.dir
-  OBJECT_FILE_DIR = CMakeFiles/RedNoise.dir/src
-
-build CMakeFiles/RedNoise.dir/src/GetCanvasintersectionPoint.cpp.o: CXX_COMPILER__RedNoise_unscanned_Debug /Users/liuzhiming/Desktop/CG/CG_REPO-main/RedNoise/src/GetCanvasintersectionPoint.cpp || cmake_object_order_depends_target_RedNoise
-  DEP_FILE = CMakeFiles/RedNoise.dir/src/GetCanvasintersectionPoint.cpp.o.d
-  FLAGS = -g -std=gnu++14 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -fcolor-diagnostics -Wall -Wextra -Wcast-align -Wfatal-errors -Werror=return-type -Wno-unused-parameter -Wno-unused-variable -Wno-ignored-attributes -O2 -fno-omit-frame-pointer -g
-  INCLUDES = -I/opt/homebrew/Cellar/sdl2/2.28.3/include -I/Users/liuzhiming/Desktop/CG/CG_REPO-main/RedNoise/libs/glm-0.9.7.2 -I/Users/liuzhiming/Desktop/CG/CG_REPO-main/RedNoise/libs/sdw -isystem /opt/homebrew/Cellar/sdl2/2.28.3/include/SDL2
-  OBJECT_DIR = CMakeFiles/RedNoise.dir
-  OBJECT_FILE_DIR = CMakeFiles/RedNoise.dir/src
-
-build CMakeFiles/RedNoise.dir/src/CameraPosition.cpp.o: CXX_COMPILER__RedNoise_unscanned_Debug /Users/liuzhiming/Desktop/CG/CG_REPO-main/RedNoise/src/CameraPosition.cpp || cmake_object_order_depends_target_RedNoise
-  DEP_FILE = CMakeFiles/RedNoise.dir/src/CameraPosition.cpp.o.d
-  FLAGS = -g -std=gnu++14 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -fcolor-diagnostics -Wall -Wextra -Wcast-align -Wfatal-errors -Werror=return-type -Wno-unused-parameter -Wno-unused-variable -Wno-ignored-attributes -O2 -fno-omit-frame-pointer -g
-  INCLUDES = -I/opt/homebrew/Cellar/sdl2/2.28.3/include -I/Users/liuzhiming/Desktop/CG/CG_REPO-main/RedNoise/libs/glm-0.9.7.2 -I/Users/liuzhiming/Desktop/CG/CG_REPO-main/RedNoise/libs/sdw -isystem /opt/homebrew/Cellar/sdl2/2.28.3/include/SDL2
-  OBJECT_DIR = CMakeFiles/RedNoise.dir
-  OBJECT_FILE_DIR = CMakeFiles/RedNoise.dir/src
-
 
 # =============================================================================
 # Link build statements for EXECUTABLE target RedNoise
@@ -162,7 +127,7 @@ build CMakeFiles/RedNoise.dir/src/CameraPosition.cpp.o: CXX_COMPILER__RedNoise_u
 #############################################
 # Link the executable RedNoise
 
-build RedNoise: CXX_EXECUTABLE_LINKER__RedNoise_Debug CMakeFiles/RedNoise.dir/libs/sdw/CanvasPoint.cpp.o CMakeFiles/RedNoise.dir/libs/sdw/CanvasTriangle.cpp.o CMakeFiles/RedNoise.dir/libs/sdw/Colour.cpp.o CMakeFiles/RedNoise.dir/libs/sdw/DrawingWindow.cpp.o CMakeFiles/RedNoise.dir/libs/sdw/ModelTriangle.cpp.o CMakeFiles/RedNoise.dir/libs/sdw/RayTriangleIntersection.cpp.o CMakeFiles/RedNoise.dir/libs/sdw/TextureMap.cpp.o CMakeFiles/RedNoise.dir/libs/sdw/TexturePoint.cpp.o CMakeFiles/RedNoise.dir/libs/sdw/Utils.cpp.o CMakeFiles/RedNoise.dir/src/RedNoise.cpp.o CMakeFiles/RedNoise.dir/src/DrawFile.cpp.o CMakeFiles/RedNoise.dir/src/Interpolate.cpp.o CMakeFiles/RedNoise.dir/src/LoadFile.cpp.o CMakeFiles/RedNoise.dir/src/GetCanvasintersectionPoint.cpp.o CMakeFiles/RedNoise.dir/src/CameraPosition.cpp.o | /opt/homebrew/Cellar/sdl2/2.28.3/lib/libSDL2.dylib
+build RedNoise: CXX_EXECUTABLE_LINKER__RedNoise_Debug CMakeFiles/RedNoise.dir/libs/sdw/CanvasPoint.cpp.o CMakeFiles/RedNoise.dir/libs/sdw/CanvasTriangle.cpp.o CMakeFiles/RedNoise.dir/libs/sdw/Colour.cpp.o CMakeFiles/RedNoise.dir/libs/sdw/DrawingWindow.cpp.o CMakeFiles/RedNoise.dir/libs/sdw/ModelTriangle.cpp.o CMakeFiles/RedNoise.dir/libs/sdw/RayTriangleIntersection.cpp.o CMakeFiles/RedNoise.dir/libs/sdw/TextureMap.cpp.o CMakeFiles/RedNoise.dir/libs/sdw/TexturePoint.cpp.o CMakeFiles/RedNoise.dir/libs/sdw/Utils.cpp.o CMakeFiles/RedNoise.dir/src/RedNoise.cpp.o | /opt/homebrew/Cellar/sdl2/2.28.3/lib/libSDL2.dylib
   FLAGS = -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk
   LINK_LIBRARIES = -Wl,-rpath,/opt/homebrew/Cellar/sdl2/2.28.3/lib  -Wl  /opt/homebrew/Cellar/sdl2/2.28.3/lib/libSDL2.dylib
   LINK_PATH = -L/opt/homebrew/Cellar/sdl2/2.28.3/lib
