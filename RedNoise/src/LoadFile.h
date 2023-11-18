@@ -185,7 +185,6 @@ vector<ModelTriangle> loadObjFile(const std::string& filename, float scalingFact
         }
         else if (tokens[0] == "f") {
             if(tokens.size() < 4) continue; // Not a valid face definition.
-
             vector<string> v1_tokens = split(tokens[1], '/');
             vector<string> v2_tokens = split(tokens[2], '/');
             vector<string> v3_tokens = split(tokens[3], '/');
@@ -219,8 +218,6 @@ vector<ModelTriangle> loadObjFile(const std::string& filename, float scalingFact
     return triangles;
 }
 
-
-
 unordered_map<string,Colour> loadMtlFile(const std::string& filename) {
     ifstream file(filename);
     string line;
@@ -252,4 +249,15 @@ unordered_map<string,Colour> loadMtlFile(const std::string& filename) {
     file.close();
     return colours;
 }
+
+
+unordered_map<string, vector<ModelTriangle>> loadMultipleObjFiles(const vector<string>& filenames, float scalingFactor, unordered_map<string,Colour> colours) {
+    unordered_map<string, vector<ModelTriangle>> allTriangles;
+    for(const auto& filename : filenames) {
+        vector<ModelTriangle> fileTriangles = loadObjFile(filename, scalingFactor, colours);
+        allTriangles[filename] = fileTriangles;
+    }
+    return allTriangles;
+}
+
 

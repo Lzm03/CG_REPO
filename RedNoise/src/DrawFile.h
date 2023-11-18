@@ -13,8 +13,21 @@
 using namespace std;
 using namespace glm;
 
-
 void draw(DrawingWindow &window) {
+    window.clearPixels();
+    // Week2 Task 3
+    for (size_t y = 0; y < window.height; y++) {
+        for (size_t x = 0; x < window.width; x++) {
+            float red = 0;
+            float green = 0;
+            float blue = 0;
+            uint32_t colour = (255 << 24) + (int(red) << 16) + (int(green) << 8) + int(blue);
+            window.setPixelColour(x, y, colour);
+        }
+    }
+}
+
+void drawBlackAWhite(DrawingWindow &window) {
     window.clearPixels();
     // Week2 Task 3
     for (size_t y = 0; y < window.height; y++) {
@@ -180,8 +193,36 @@ void drawFilledTriangle(CanvasTriangle triangle, Colour input_colour, Colour lin
     drawTriangle(triangle,line_Colour,window);
 }
 
-bool is_shadow(RayTriangleIntersection intersection, vector<ModelTriangle> triangles) {
-    vec3 shadow_rayDirection = vec3(0.0, 0.5, 0.5) - intersection.intersectionPoint;
+vec3 calculateFaceNormal(ModelTriangle &triangle){
+    vec3 edge1 = triangle.vertices[1] - triangle.vertices[0];
+    vec3 edge2 = triangle.vertices[2] - triangle.vertices[0];
+    vec3 normal = normalize(cross(edge1, edge2));
+    return normal;
+}
+
+float getProximityLighting(vec3 &light,vec3 &point){
+    float distance = length(light - point); //distanceFromLightToPoint
+    float Intensity =  40 /(4*M_PI*(pow(distance,2))); // intensity at surface of sphere
+    float proximityLighting = std::max(0.0f, std::min(1.0f,Intensity)); // Range of brightness;
+    return proximityLighting;
+}
+
+float getIncidentLight(vec3 &light,vec3 &point, vec3 &faceNormal){
+    vec3 lightDirection = normalize(light - point);
+    float angleOfIncidence = std::max(0.0f,std::min(1.0f,dot(normalize(faceNormal), lightDirection))); // Range of brightness
+    return angleOfIncidence;
+}
+
+float getReflectionLight(vec3 &light, vec3 &cameraPosition, vec3 &point, vec3 &normal, float specularExponent) {
+    vec3 lightDirection = normalize(light - point);
+    vec3 cameraDirection = normalize(cameraPosition - point);
+    vec3 reflectDirection = normalize(normalize(-lightDirection) - (normal * 2.0f * dot(normalize(-lightDirection), normal)));
+    float reflectionLight = pow(dot(cameraDirection, reflectDirection), specularExponent);
+    return reflectionLight;
+}
+
+bool is_shadow(RayTriangleIntersection intersection, vector<ModelTriangle> &triangles,vec3 &light) {
+    vec3 shadow_rayDirection = light - intersection.intersectionPoint;
     for(int i = 0; i < triangles.size(); i++) {
         ModelTriangle triangle = triangles[i];
         vec3 e0 = triangle.vertices[1] - triangle.vertices[0];
@@ -200,7 +241,7 @@ bool is_shadow(RayTriangleIntersection intersection, vector<ModelTriangle> trian
     return false;
 }
 
-RayTriangleIntersection getClosestValidIntersection(vector<ModelTriangle> triangles, vec3 cameraPosition, vec3 rayDirection){
+RayTriangleIntersection getClosestValidIntersection(vector<ModelTriangle> &triangles, vec3 cameraPosition, vec3 rayDirection) {
     RayTriangleIntersection r;
     r.distanceFromCamera = numeric_limits<float>::infinity();
     for (int i = 0; i < triangles.size(); ++i) {
@@ -213,8 +254,8 @@ RayTriangleIntersection getClosestValidIntersection(vector<ModelTriangle> triang
         float t = possibleSolution.x;
         float u = possibleSolution.y;
         float v = possibleSolution.z;
-        if (t > 0 && u >= 0 && u <= 1.0 && v >= 0.0 && v <= 1.0 && (u + v) <= 1.0){
-            if(r.distanceFromCamera > t) {
+        if (t > 0 && u >= 0 && u <= 1.0 && v >= 0.0 && v <= 1.0 && (u + v) <= 1.0) {
+            if (r.distanceFromCamera > t) {
                 vec3 intersectionPoint = cameraPosition + possibleSolution.x * rayDirection;
                 float distanceFromCamera = t;
                 r = RayTriangleIntersection(intersectionPoint, distanceFromCamera, triangle, i);
@@ -224,29 +265,170 @@ RayTriangleIntersection getClosestValidIntersection(vector<ModelTriangle> triang
     return r;
 }
 
-vec3 getRayDirectionFromCanvas(int x, int y, int width, int height, float focalLength, float scalingFactor, mat3 cameraOrientation, vec3 &camerPosition) {
-    float ndcX = (x - (width / 2.0f)) / (focalLength * scalingFactor);
-    float ndcY = ((height / 2.0f) - y) / (focalLength * scalingFactor);
-    vec3 rayDirectionCameraSpace(ndcX , ndcY, -focalLength);
-    vec3 rayDirectionWorldSpace = normalize(cameraOrientation * (rayDirectionCameraSpace - camerPosition));
+vec3 getRayDirectionFromCanvas(int x, int y,int width, int height, float focalLength, float scalingFactor, mat3 cameraOrientation, vec3 &camerPosition) {
+    vec3 rayDirectionWorldSpace;
+    float ndcX = (x - camerPosition.x - (width / 2.0f)) / (focalLength * scalingFactor);
+    float ndcY = (y - camerPosition.y - (height / 2.0f)) / (focalLength * scalingFactor);
+    vec3 rayDirectionCameraSpace(-ndcX , -ndcY, -focalLength);
+    rayDirectionWorldSpace = normalize(cameraOrientation * rayDirectionCameraSpace);
     return rayDirectionWorldSpace;
 }
 
-void drawRayTracedScene(vector<ModelTriangle> &triangles, DrawingWindow &window, vec3 &cameraPosition, float focalLength, mat3 &cameraOrientation) {
+void drawRayTracedScene(vector<ModelTriangle> &triangles, DrawingWindow &window, vec3 &cameraPosition, float focalLength, mat3 &cameraOrientation,vec3 &light,float scaling_factor) {
     for (int y = 0; y < window.height; y++) {
         for (int x = 0; x < window.width; x++) {
-            float scaling_factor = 60.0f;
             vec3 rayDirection = getRayDirectionFromCanvas(x,y,window.width,window.height,focalLength,scaling_factor,cameraOrientation,cameraPosition);
-            RayTriangleIntersection intersection = getClosestValidIntersection(triangles, cameraPosition, rayDirection);
-            if (!isinf(intersection.distanceFromCamera)) {
-                Colour colour = intersection.intersectedTriangle.colour;
+            RayTriangleIntersection r = getClosestValidIntersection(triangles, cameraPosition, rayDirection);
+            if (!isinf(r.distanceFromCamera)) {
+                r.intersectedTriangle.normal = calculateFaceNormal(r.intersectedTriangle);
+                float Proximity = getProximityLighting(light,r.intersectionPoint);
+                float AngleOfIncidence = getIncidentLight(light,r.intersectionPoint,r.intersectedTriangle.normal);
+                float specularExponent = 256.0f;
+                float reflectionLight = getReflectionLight(light,cameraPosition,r.intersectionPoint,r.intersectedTriangle.normal,specularExponent);
+
+                Colour colour = r.intersectedTriangle.colour;
+
+                // Diffuse lighting(with Ambient lighting)
+                float Diffuselight = glm::clamp(Proximity * AngleOfIncidence,0.5f,1.0f);
+                colour.red = colour.red * Diffuselight;
+                colour.green = colour.green * Diffuselight;
+                colour.blue = colour.blue * Diffuselight;
+
+                //Specular highlighting
+                colour.red = std::min((colour.red + reflectionLight*255), 255.0f);
+                colour.green = std::min((colour.green + reflectionLight*255), 255.0f);
+                colour.blue = std::min((colour.blue + reflectionLight*255), 255.0f);
+
                 uint32_t ray_Color = (255 << 24) + (int(colour.red) << 16) + (int(colour.green) << 8) + int(colour.blue);
-                if (!is_shadow(intersection, triangles)) {
+                if (!is_shadow(r, triangles, light)) {
                     window.setPixelColour(x, y, ray_Color);
-                } else {
-                    uint32_t shadowColor = (255 << 24) + (colour.red/3 << 16) + (colour.green/3 << 8) + colour.blue/3;
+                }
+                else{
+                    uint32_t shadowColor = (255 << 24) + (colour.red/2 << 16) + (colour.green/2 << 8) + colour.blue/2;
                     window.setPixelColour(x, y, shadowColor);
                 }
+            }
+        }
+    }
+}
+
+vector<ModelTriangle> calculateVertexNormals(vector<ModelTriangle> &triangles) {
+    for (auto& triangle : triangles) {
+        triangle.normal = calculateFaceNormal(triangle);
+    }
+    for (auto& triangle : triangles) {
+        triangle.vertexNormals.resize(triangle.vertices.size());
+        for (int v = 0; v < triangle.vertices.size(); ++v) {
+            vec3 vertexNormal = vec3(0.0f);
+            int count = 0;
+            for (auto& otherTriangle : triangles) {
+                for (auto& otherVertex : otherTriangle.vertices) {
+                    if (triangle.vertices[v] == otherVertex) {
+                        vertexNormal += otherTriangle.normal;
+                        count++;
+                    }
+                }
+            }
+            if (count != 0) {
+                triangle.vertexNormals[v] = normalize(vertexNormal / static_cast<float>(count));
+            }
+        }
+    }
+    return triangles;
+}
+
+Colour calculateLightingAtVertex(RayTriangleIntersection r, vec3 &normal, vec3 &light, vec3 &vertex, vec3 &cameraPosition, float shininess ) {
+    float ambientStrength = 0.2f;
+    Colour ambientColour = {
+            int(r.intersectedTriangle.colour.red * ambientStrength),
+            int(r.intersectedTriangle.colour.green * ambientStrength),
+            int(r.intersectedTriangle.colour.blue * ambientStrength)
+    };
+
+
+    vec3 toLight = light - r.intersectionPoint;
+    float distance = length(toLight);
+    float Intensity =  100 /(4*M_PI*(pow(distance,2)));
+    float attenuation = std::max(0.0f, std::min(1.0f,Intensity));
+
+    vec3 lightDirection = normalize(toLight);
+    float diff = std::max(dot(normal, lightDirection), 0.0f);
+    Colour diffuseColour = {
+            int(r.intersectedTriangle.colour.red * diff * attenuation),
+            int(r.intersectedTriangle.colour.green * diff * attenuation),
+            int(r.intersectedTriangle.colour.blue * diff * attenuation)
+    };
+
+    vec3 viewDir = normalize(cameraPosition - r.intersectionPoint);
+    vec3 reflectDir = normalize(normalize(-lightDirection) - (normal * 2.0f * dot(normalize(-lightDirection), normal)));
+    float spec = pow(std::max(dot(viewDir, reflectDir), 0.0f), shininess);
+    Colour specularColour = {
+            int(255.0f * spec),
+            int(255.0f *  spec),
+            int(255.0f * spec)
+    };
+
+    int finalRed = std::min(ambientColour.red + diffuseColour.red + specularColour.red, 255);
+    int finalGreen = std::min(ambientColour.green + diffuseColour.green + specularColour.green, 255);
+    int finalBlue = std::min(ambientColour.blue + diffuseColour.blue + specularColour.blue, 255);
+
+    return Colour{finalRed, finalGreen, finalBlue};
+}
+
+
+Colour interpolateVertexColours(ModelTriangle &triangle, vec3 &barycentric) {
+    Colour colour;
+    colour.red = barycentric.x * triangle.vertexColours[0].red + barycentric.y * triangle.vertexColours[1].red + barycentric.z * triangle.vertexColours[2].red;
+    colour.green = barycentric.x * triangle.vertexColours[0].green + barycentric.y * triangle.vertexColours[1].green + barycentric.z * triangle.vertexColours[2].green;
+    colour.blue = barycentric.x * triangle.vertexColours[0].blue + barycentric.y * triangle.vertexColours[1].blue + barycentric.z * triangle.vertexColours[2].blue;
+    return colour;
+}
+
+uint32_t convertColourToUint(Colour &colour) {
+    uint32_t r = static_cast<uint32_t>(std::min(std::max(colour.red, 0), 255));
+    uint32_t g = static_cast<uint32_t>(std::min(std::max(colour.green, 0), 255));
+    uint32_t b = static_cast<uint32_t>(std::min(std::max(colour.blue, 0), 255));
+    return (255 << 24) + (r << 16) + (g << 8) + b;
+}
+
+vec3 getBarycentricCoordinates(vec3 &point, ModelTriangle &triangle) {
+    vec3 v0 = triangle.vertices[1] - triangle.vertices[0];
+    vec3 v1 = triangle.vertices[2] - triangle.vertices[0];
+    vec3 v2 = point - triangle.vertices[0];
+
+    float d00 = dot(v0, v0);
+    float d01 = dot(v0, v1);
+    float d11 = dot(v1, v1);
+    float d20 = dot(v2, v0);
+    float d21 = dot(v2, v1);
+    float denom = d00 * d11 - d01 * d01;
+
+    float v = (d11 * d20 - d01 * d21) / denom;
+    float w = (d00 * d21 - d01 * d20) / denom;
+    float u = 1.0f - v - w;
+
+    return vec3(u, v, w);
+}
+
+void drawGouraud(vector<ModelTriangle> triangles, DrawingWindow &window, vec3 &cameraPosition, float focalLength, mat3 &cameraOrientation,vec3 &light,float scaling_factor){
+    for (int y = 0; y < window.height; y++) {
+        for (int x = 0; x < window.width; x++) {
+            vec3 rayDirection = getRayDirectionFromCanvas(x,y,window.width,window.height,focalLength,scaling_factor,cameraOrientation,cameraPosition);
+            RayTriangleIntersection r = getClosestValidIntersection(triangles, cameraPosition, rayDirection);
+            for (auto& triangle : triangles) {
+                triangle.vertexColours.resize(triangle.vertices.size());
+                for (int v = 0; v < triangle.vertices.size(); ++v) {
+                    triangle.vertexColours[v] = calculateLightingAtVertex(r,triangle.vertexNormals[v],light,triangle.vertices[v],cameraPosition,64.0f);
+                }
+            }
+
+            if (!isinf(r.distanceFromCamera)) {
+                vec3 barycentric = getBarycentricCoordinates(r.intersectionPoint, r.intersectedTriangle);
+                Colour interpolatedColour = interpolateVertexColours(r.intersectedTriangle, barycentric);
+                if (is_shadow(r, triangles, light)) {
+                    interpolatedColour = Colour{int(interpolatedColour.red * 0.5), int(interpolatedColour.green * 0.5), int(interpolatedColour.blue * 0.5)};
+                }
+                window.setPixelColour(x, y, convertColourToUint(interpolatedColour));
             }
         }
     }
@@ -482,7 +664,7 @@ void drawTexturedTriangle(CanvasTriangle triangle, TextureMap texture, DrawingWi
 //    }
 //}
 
-void drawWireframe(vector<ModelTriangle> &triangles, vec3 &cameraPosition, float focalLength, DrawingWindow &window, mat3 &cameraOrientation) {
+void drawWireframe(vector<ModelTriangle> &triangles, vec3 cameraPosition, float focalLength, DrawingWindow &window, mat3 &cameraOrientation,float scaling_factor) {
     CanvasPoint p1;
     CanvasPoint p2;
     for (int i = 0; i < 3; ++i) {
@@ -490,7 +672,6 @@ void drawWireframe(vector<ModelTriangle> &triangles, vec3 &cameraPosition, float
             ModelTriangle triangle = triangles[j];
             vec3 vertexPosition1 = triangle.vertices[i];
             vec3 vertexPosition2 = triangle.vertices[(i + 1) %3];
-            float scaling_factor = 320.0f;
             vec2 canvasPoint1 = getCanvasIntersectionPoint(cameraPosition, vertexPosition1, focalLength, scaling_factor,
                                                            window.width, window.height, cameraOrientation);
             vec2 canvasPoint2 = getCanvasIntersectionPoint(cameraPosition, vertexPosition2, focalLength, scaling_factor,
@@ -535,12 +716,11 @@ void drawRenderTriangle(CanvasTriangle triangle, Colour input_colour, DrawingWin
     }
 }
 
-void drawRasterised(ModelTriangle triangle, vec3 cameraPosition, float focalLength, DrawingWindow &window, vector<vector<float>>& depthBuffer, mat3 cameraOrientation) {
+void drawRasterised(ModelTriangle triangle, vec3 cameraPosition, float focalLength, DrawingWindow &window, vector<vector<float>>& depthBuffer, mat3 cameraOrientation,float scaling_factor) {
     CanvasTriangle canvasTriangle;
     RayTriangleIntersection r;
     for (int i = 0; i < 3; ++i) {
         vec3 vertexPosition = triangle.vertices[i];
-        float scaling_factor = 320.0f;
         vec2 canvasPoint = getCanvasIntersectionPoint(cameraPosition, vertexPosition, focalLength, scaling_factor, window.width, window.height, cameraOrientation);
         vec3 cameraSpaceVertex = cameraOrientation * (vertexPosition - cameraPosition);
         canvasTriangle.vertices[i] = CanvasPoint(canvasPoint.x, canvasPoint.y, -cameraSpaceVertex.z);
@@ -561,12 +741,12 @@ void drawRasterised(ModelTriangle triangle, vec3 cameraPosition, float focalLeng
     }
 }
 
-void drawRasterisedModel(vector<ModelTriangle> &triangles, vec3 &cameraPosition, float focalLength, DrawingWindow &window, mat3 &cameraOrientation) {
+void drawRasterisedModel(vector<ModelTriangle> &triangles, vec3 &cameraPosition, float focalLength, DrawingWindow &window, mat3 &cameraOrientation,float scaling_factor) {
     int width = window.width;
     int height = window.height;
     vector<vector<float>> depthBuffer(width, vector<float>(height, numeric_limits<float>::infinity()));
     for (int i = 0; i < triangles.size(); ++i) {
-        drawRasterised(triangles[i], cameraPosition, focalLength, window, depthBuffer, cameraOrientation);
+        drawRasterised(triangles[i], cameraPosition, focalLength, window, depthBuffer, cameraOrientation,scaling_factor);
     }
 }
 

@@ -40,7 +40,6 @@ add_executable(RedNoise
         src/Interpolate.h
         src/LoadFile.h
         src/GetCanvasIntersectionPoint.h
-        src/CameraPosition.h
 )
 
 if (MSVC)
