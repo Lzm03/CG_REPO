@@ -184,16 +184,6 @@ void Change_cameraPosition(SDL_Event event, DrawingWindow &window) {
 
 }
 
-void updateCameraPosition(int frame, float step) {
-    if (frame < 12) {
-        cameraPosition.x -= step;
-    } else if (frame < 36) {
-        cameraPosition.x += step;
-    } else if (frame < 48) {
-        cameraPosition.x -= step;
-    }
-}
-
 void renderFrame(vector<ModelTriangle> &triangles, DrawingWindow &window, float focalLength) {
     const int frameCount = 48;
     const int n_zero = 5;
@@ -205,7 +195,6 @@ void renderFrame(vector<ModelTriangle> &triangles, DrawingWindow &window, float 
 //        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
 //        window.savePPM("../output/" + frameNumber + ".ppm");
 //        cout << "saved " << frame << endl;
-//        updateCameraPosition(frame, cameraMoveStep);
 //    }
 
 //    for (int frame = 0; frame < frameCount; ++frame) {
@@ -214,7 +203,6 @@ void renderFrame(vector<ModelTriangle> &triangles, DrawingWindow &window, float 
 //        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
 //        window.savePPM("../output1/" + frameNumber + ".ppm");
 //        cout << "saved " << frame << endl;
-//        updateCameraPosition(frame, cameraMoveStep);
 //    }
 
 //    for (int frame = 0; frame < frameCount; ++frame) {
@@ -223,7 +211,6 @@ void renderFrame(vector<ModelTriangle> &triangles, DrawingWindow &window, float 
 //        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
 //        window.savePPM("../output2/" + frameNumber + ".ppm");
 //        cout << "saved " << frame << endl;
-//        updateCameraPosition(frame, cameraMoveStep);
 //    }
 
 }
