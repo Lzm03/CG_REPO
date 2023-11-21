@@ -337,14 +337,13 @@ vector<ModelTriangle> calculateVertexNormals(vector<ModelTriangle> &triangles) {
     return triangles;
 }
 
-Colour calculateLightingAtVertex(RayTriangleIntersection r, vec3 &normal, vec3 &light, vec3 &vertex, vec3 &cameraPosition, float shininess ) {
+Colour calculateLightingAtVertex(RayTriangleIntersection r, vec3 &normal, vec3 &light, vec3 &cameraPosition, float shininess ) {
     float ambientStrength = 0.2f;
     Colour ambientColour = {
             int(r.intersectedTriangle.colour.red * ambientStrength),
             int(r.intersectedTriangle.colour.green * ambientStrength),
             int(r.intersectedTriangle.colour.blue * ambientStrength)
     };
-
 
     vec3 toLight = light - r.intersectionPoint;
     float distance = length(toLight);
@@ -410,7 +409,7 @@ vec3 getBarycentricCoordinates(vec3 &point, ModelTriangle &triangle) {
     return vec3(u, v, w);
 }
 
-void drawGouraud(vector<ModelTriangle> triangles, DrawingWindow &window, vec3 &cameraPosition, float focalLength, mat3 &cameraOrientation,vec3 &light,float scaling_factor){
+void drawPhong(vector<ModelTriangle> triangles, DrawingWindow &window, vec3 &cameraPosition, float focalLength, mat3 &cameraOrientation,vec3 &light,float scaling_factor){
     for (int y = 0; y < window.height; y++) {
         for (int x = 0; x < window.width; x++) {
             vec3 rayDirection = getRayDirectionFromCanvas(x,y,window.width,window.height,focalLength,scaling_factor,cameraOrientation,cameraPosition);
@@ -418,7 +417,7 @@ void drawGouraud(vector<ModelTriangle> triangles, DrawingWindow &window, vec3 &c
             for (auto& triangle : triangles) {
                 triangle.vertexColours.resize(triangle.vertices.size());
                 for (int v = 0; v < triangle.vertices.size(); ++v) {
-                    triangle.vertexColours[v] = calculateLightingAtVertex(r,triangle.vertexNormals[v],light,triangle.vertices[v],cameraPosition,64.0f);
+                    triangle.vertexColours[v] = calculateLightingAtVertex(r,triangle.vertexNormals[v],light,cameraPosition,64.0f);
                 }
             }
 
@@ -426,13 +425,59 @@ void drawGouraud(vector<ModelTriangle> triangles, DrawingWindow &window, vec3 &c
                 vec3 barycentric = getBarycentricCoordinates(r.intersectionPoint, r.intersectedTriangle);
                 Colour interpolatedColour = interpolateVertexColours(r.intersectedTriangle, barycentric);
                 if (is_shadow(r, triangles, light)) {
-                    interpolatedColour = Colour{int(interpolatedColour.red * 0.5), int(interpolatedColour.green * 0.5), int(interpolatedColour.blue * 0.5)};
+                    interpolatedColour = Colour{int(interpolatedColour.red), int(interpolatedColour.green), int(interpolatedColour.blue)};
                 }
                 window.setPixelColour(x, y, convertColourToUint(interpolatedColour));
             }
         }
     }
 }
+
+
+void drawGouraud(vector<ModelTriangle> triangles, DrawingWindow &window, vec3 &cameraPosition, float focalLength, mat3 &cameraOrientation,vec3 &light,float scaling_factor) {
+    for (int y = 0; y < window.height; y++) {
+        for (int x = 0; x < window.width; x++) {
+            vec3 rayDirection = getRayDirectionFromCanvas(x,y,window.width,window.height,focalLength,scaling_factor,cameraOrientation,cameraPosition);
+            RayTriangleIntersection r = getClosestValidIntersection(triangles, cameraPosition, rayDirection);
+
+            for (auto& triangle : triangles) {
+                for (int v = 0; v < triangle.vertices.size(); ++v) {
+                    float Proximity = getProximityLighting(light, r.intersectionPoint);
+                    float AngleOfIncidence = getIncidentLight(light, r.intersectionPoint, triangle.vertexNormals[v]);
+                    float specularExponent = 256.0f;
+                    float reflectionLight = getReflectionLight(light, cameraPosition, r.intersectionPoint,
+                                                               triangle.vertexNormals[v], specularExponent);
+                    if (!isinf(r.distanceFromCamera)) {
+
+                        Colour colour = r.intersectedTriangle.colour;
+                        // Diffuse lighting(with Ambient lighting)
+                        float Diffuselight = glm::clamp(Proximity * AngleOfIncidence, 0.5f, 1.0f);
+                        colour.red = colour.red * Diffuselight;
+                        colour.green = colour.green * Diffuselight;
+                        colour.blue = colour.blue * Diffuselight;
+
+                        //Specular highlighting
+                        colour.red = std::min((colour.red + reflectionLight * 255), 255.0f);
+                        colour.green = std::min((colour.green + reflectionLight * 255), 255.0f);
+                        colour.blue = std::min((colour.blue + reflectionLight * 255), 255.0f);
+
+                        uint32_t ray_Color =
+                                (255 << 24) + (int(colour.red) << 16) + (int(colour.green) << 8) + int(colour.blue);
+                        if (!is_shadow(r, triangles, light)) {
+                            window.setPixelColour(x, y, ray_Color);
+                        } else {
+                            uint32_t shadowColor =
+                                    (255 << 24) + (colour.red << 16) + (colour.green  << 8) + colour.blue / 2;
+                            window.setPixelColour(x, y, shadowColor);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
 
 // Week3 Task 5
 //void drawTexturedTriangle(CanvasTriangle triangle, TextureMap texture, DrawingWindow &window,vector<std::vector<float>>& depthBuffer) {

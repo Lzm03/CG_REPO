@@ -102,10 +102,11 @@ void Change_cameraPosition(SDL_Event event, DrawingWindow &window) {
 //    vector<ModelTriangle> triangles_1 = loadObjFile("../cornell-box.obj", scalingFactor, loadMtlFile("../cornell-box.mtl"));
 //    vector<ModelTriangle> triangles_2 = loadObjFile("../sphere.obj", scalingFactor, loadMtlFile("../cornell-box.mtl"));
 
-    vector<string> filenames = {"../textured-cornell-box.obj", "../sphere.obj"};
+    vector<string> filenames = {"../textured-cornell-box.obj", "../sphere.obj","../logo.obj"};
     unordered_map<string, vector<ModelTriangle>> allTriangles = loadMultipleObjFiles(filenames, scalingFactor, loadMtlFile("../textured-cornell-box.mtl"));
     vector<ModelTriangle> box = allTriangles["../textured-cornell-box.obj"];
     vector<ModelTriangle> sphere = allTriangles["../sphere.obj"];
+    vector<ModelTriangle> logo = allTriangles["../logo.obj"];
 
     if (event.type == SDL_KEYDOWN) {
         // Camera translation
@@ -171,12 +172,14 @@ void Change_cameraPosition(SDL_Event event, DrawingWindow &window) {
             break;
         case RENDER_RASTERISED:
             drawRasterisedModel(box, cameraPosition, focalLength, window, cameraOrientation,320.0f);
+//            drawRasterisedModel(logo, cameraPosition, focalLength, window, cameraOrientation,5.0f);
             break;
         case RENDER_TRACED:
             drawRayTracedScene(box,window,cameraPosition,focalLength,cameraOrientation,Boxlight,180.0f);
             break;
         case RENDER_GOURAUD:
-            drawGouraud(calculateVertexNormals(sphere),window,cameraPosition,focalLength,cameraOrientation,Spherelight, 300.0f);
+            drawPhong(calculateVertexNormals(sphere),window,cameraPosition,focalLength,cameraOrientation,Spherelight, 250.0f);
+//            drawGouraud(calculateVertexNormals(sphere),window,cameraPosition,focalLength,cameraOrientation,Spherelight,250.0f);
             break;
         case RENDER_NONE:
             break;
@@ -272,7 +275,7 @@ void renderFrame(vector<ModelTriangle> &triangles, DrawingWindow &window, float 
 //        v1.texturePoint = TexturePoint{395, 380};
 //        v2.texturePoint = TexturePoint{65, 330};
 //        CanvasTriangle triangle(v0, v1, v2);
-//        TextureMap texture = TextureMap("../texture.ppm");
+//        TextureMap texture = TextureMap("../logo_texture.ppm");
 //        drawTexturedTriangle(triangle,texture,window);
 
             // We MUST poll for events - otherwise the window will freeze !

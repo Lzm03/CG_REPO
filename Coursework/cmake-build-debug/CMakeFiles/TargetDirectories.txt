@@ -1,0 +1,3 @@
+/Users/liuzhiming/Desktop/CG/CG_REPO-main/Coursework/cmake-build-debug/CMakeFiles/RedNoise.dir
+/Users/liuzhiming/Desktop/CG/CG_REPO-main/Coursework/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/liuzhiming/Desktop/CG/CG_REPO-main/Coursework/cmake-build-debug/CMakeFiles/rebuild_cache.dir
