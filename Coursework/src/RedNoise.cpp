@@ -26,8 +26,8 @@ mat3 cameraOrientation(
         vec3(0.0,0.0,1.0)
 );
 vec3 cameraPosition(0.0f, 0.0f, 4.0f);
-vec3 BoxLight(0.0,0.4f,0.3f);
 vec3 SphereLight(0.0f,1.5f, 3.5f);
+vec3 BoxLight(0.0,0.5,0.2);
 
 enum RenderMode {
     RENDER_NONE,
@@ -42,18 +42,18 @@ enum RenderMode {
 };
 RenderMode currentRenderMode = RENDER_NONE;
 
-void draw(DrawingWindow &window) {
-    window.clearPixels();
-    for (size_t y = 0; y < window.height; y++) {
-        for (size_t x = 0; x < window.width; x++) {
-            float red = 0;
-            float green = 0;
-            float blue = 0;
-            uint32_t colour = (255 << 24) + (int(red) << 16) + (int(green) << 8) + int(blue);
-            window.setPixelColour(x, y, colour);
-        }
-    }
-}
+//void draw(DrawingWindow &window) {
+//    window.clearPixels();
+//    for (size_t y = 0; y < window.height; y++) {
+//        for (size_t x = 0; x < window.width; x++) {
+//            float red = 0;
+//            float green = 0;
+//            float blue = 0;
+//            uint32_t colour = (255 << 24) + (int(red) << 16) + (int(green) << 8) + int(blue);
+//            window.setPixelColour(x, y, colour);
+//        }
+//    }
+//}
 
 vector<ModelTriangle> loadObjFile(const std::string& filename, float scalingFactor, unordered_map<string,Colour> colours) {
     ifstream file(filename);
@@ -198,7 +198,7 @@ void renderWireframe(vector<ModelTriangle> triangles, DrawingWindow &window,floa
     }
 }
 
-void renderTexture(ModelTriangle triangle, TextureMap texture, DrawingWindow &window, vector<vector<float>>& depthBuffer) {
+void Texturing(ModelTriangle triangle, TextureMap texture, DrawingWindow &window, vector<vector<float>>& depthBuffer) {
     if (triangle.vertices[0].y > triangle.vertices[1].y) swap(triangle.vertices[0], triangle.vertices[1]);
     if (triangle.vertices[0].y > triangle.vertices[2].y) swap(triangle.vertices[0], triangle.vertices[2]);
     if (triangle.vertices[1].y > triangle.vertices[2].y) swap(triangle.vertices[1], triangle.vertices[2]);
@@ -226,7 +226,7 @@ void renderTexture(ModelTriangle triangle, TextureMap texture, DrawingWindow &wi
                     float texY = triangle.texturePoints[0].y * lambda1 + triangle.texturePoints[1].y * lambda2 + triangle.texturePoints[2].y * lambda3;
 
                     if (texX >= 0 && texX < texture.width && texY >= 0 && texY < texture.height) {
-                        uint32_t index = int(texY) * texture.width + int(texX);
+                        uint32_t index = round(texY) * texture.width + round(texX);
                         window.setPixelColour(x, y, texture.pixels[index]);
                         depthBuffer[x][y] = depth;
                     }
@@ -269,12 +269,10 @@ void rasterCalculate(ModelTriangle triangle, Colour input_colour, DrawingWindow 
     }
 }
 
-void Rasterising(ModelTriangle triangle,float focalLength, DrawingWindow &window, vector<vector<float>>& depthBuffer,float scaling_factor) {
-    RayTriangleIntersection r;
+void Rasterising(ModelTriangle triangle, float focalLength, DrawingWindow &window, vector<vector<float>>& depthBuffer,float scaling_factor) {
     for (int i = 0; i < 3; ++i) {
-        vec3 vertexPosition = triangle.vertices[i];
-        vec2 canvasPoint = getCanvasIntersectionPoint(vertexPosition, focalLength, scaling_factor, window.width, window.height);
-        vec3 cameraSpaceVertex = cameraOrientation * (vertexPosition - cameraPosition);
+        vec2 canvasPoint = getCanvasIntersectionPoint(triangle.vertices[i], focalLength, scaling_factor, window.width,window.height);
+        vec3 cameraSpaceVertex = cameraOrientation * (triangle.vertices[i] - cameraPosition);
         triangle.vertices[i] = vec3(canvasPoint.x, canvasPoint.y, -cameraSpaceVertex.z);
     }
     if (!triangle.colour.name.empty()) {
@@ -283,7 +281,7 @@ void Rasterising(ModelTriangle triangle,float focalLength, DrawingWindow &window
             triangle.texturePoints[i].x *= texture.width;
             triangle.texturePoints[i].y *= texture.height;
         }
-        renderTexture(triangle, texture, window, depthBuffer);
+        Texturing(triangle, texture, window, depthBuffer);
     }else {
         Colour inputColour = triangle.colour;
         rasterCalculate(triangle, inputColour, window, depthBuffer);
@@ -299,6 +297,7 @@ void renderRasterising(vector<ModelTriangle> triangles, float focalLength, Drawi
 
 void renderTexture(vector<ModelTriangle> triangles, float focalLength, DrawingWindow &window, float scaling_factor) {
     vector<vector<float>> depthBuffer(window.width, vector<float>(window.height, numeric_limits<float>::infinity()));
+
     for (ModelTriangle& triangle : triangles) {
         if (!triangle.colour.name.empty()) {
             TextureMap texture = TextureMap("../" + triangle.colour.name);
@@ -306,7 +305,7 @@ void renderTexture(vector<ModelTriangle> triangles, float focalLength, DrawingWi
                 triangle.texturePoints[i].x *= texture.width;
                 triangle.texturePoints[i].y *= texture.height;
             }
-            renderTexture(triangle, texture, window, depthBuffer);
+            Texturing(triangle, texture, window, depthBuffer);
         }
     }
 }
@@ -345,7 +344,7 @@ Colour calculateLighting(RayTriangleIntersection r, vec3 &light) {
 
     vec3 lightDirection = normalize(light - r.intersectionPoint);
     float distance = length(lightDirection);
-    float Intensity = 40 / (4 * M_PI * (pow(distance, 2)));
+    float Intensity = 100 / (4 * M_PI * (pow(distance, 2)));
     float proximityLight = std::max(0.0f, std::min(1.0f, Intensity));
     float angleOfIncidence = std::max(0.0f, dot(r.intersectedTriangle.normal, lightDirection));
 
@@ -366,26 +365,6 @@ Colour calculateLighting(RayTriangleIntersection r, vec3 &light) {
     return finalColour;
 }
 
-bool is_shadow(RayTriangleIntersection intersection, vector<ModelTriangle> &triangles,vec3 &light) {
-    vec3 shadow_rayDirection = light - intersection.intersectionPoint;
-    for(int i = 0; i < triangles.size(); i++) {
-        ModelTriangle triangle = triangles[i];
-        vec3 e0 = triangle.vertices[1] - triangle.vertices[0];
-        vec3 e1 = triangle.vertices[2] - triangle.vertices[0];
-        vec3 SPVector = intersection.intersectionPoint - triangle.vertices[0];
-        mat3 DEMatrix(-normalize(shadow_rayDirection), e0, e1);
-        vec3 possibleSolution = inverse(DEMatrix) * SPVector;
-        float t = possibleSolution.x, u = possibleSolution.y, v = possibleSolution.z;
-
-        if((u >= 0.0) && (u <= 1.0) && (v >= 0.0) && (v <= 1.0) && (u + v) <= 1.0) {
-            if(t < length(shadow_rayDirection) && t > 0.01 && i != intersection.triangleIndex) {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
 vec3 getRayDirectionFromCanvas(int x, int y,int width, int height, float focalLength, float scalingFactor) {
     vec3 rayDirectionWorldSpace;
     float ndcX = (x - cameraPosition.x - (width / 2.0f)) / (focalLength * scalingFactor);
@@ -402,22 +381,120 @@ vec3 calculateFaceNormal(ModelTriangle &triangle){
     return normal;
 }
 
+// hard shadow
+//bool is_shadow(RayTriangleIntersection intersection, vector<ModelTriangle> &triangles,vec3 &light) {
+//    vec3 shadow_rayDirection = light - intersection.intersectionPoint;
+//    for(int i = 0; i < triangles.size(); i++) {
+//        ModelTriangle triangle = triangles[i];
+//        vec3 e0 = triangle.vertices[1] - triangle.vertices[0];
+//        vec3 e1 = triangle.vertices[2] - triangle.vertices[0];
+//        vec3 SPVector = intersection.intersectionPoint - triangle.vertices[0];
+//        mat3 DEMatrix(-normalize(shadow_rayDirection), e0, e1);
+//        vec3 possibleSolution = inverse(DEMatrix) * SPVector;
+//        float t = possibleSolution.x, u = possibleSolution.y, v = possibleSolution.z;
+//
+//        if((u >= 0.0) && (u <= 1.0) && (v >= 0.0) && (v <= 1.0) && (u + v) <= 1.0) {
+//            if(t < length(shadow_rayDirection) && t > 0.01 && i != intersection.triangleIndex) {
+//                return true;
+//            }
+//        }
+//    }
+//    return false;
+//}
+//
+//void renderRayTracedScene(vector<ModelTriangle> triangles, DrawingWindow &window, float focalLength, float scaling_factor) {
+//    for (int y = 0; y < window.height; y++) {
+//        for (int x = 0; x < window.width; x++) {
+//            vec3 rayDirection = getRayDirectionFromCanvas(x,y,window.width,window.height,focalLength,scaling_factor);
+//            RayTriangleIntersection r = getClosestValidIntersection(triangles, rayDirection);
+//            if (!isinf(r.distanceFromCamera)) {
+//                r.intersectedTriangle.normal = calculateFaceNormal(r.intersectedTriangle);
+//                Colour colour = calculateLighting(r,BoxLight);
+//                uint32_t ray_Color = (255 << 24) + (int(colour.red) << 16) + (int(colour.green) << 8) + int(colour.blue);
+//                if (!is_shadow(r, triangles, BoxLight)) {
+//                    window.setPixelColour(x, y, ray_Color);
+//                }
+//                else{
+//                    uint32_t shadowColor = (255 << 24) + (colour.red/2 << 16) + (colour.green/2 << 8) + colour.blue/2;
+//                    window.setPixelColour(x, y, shadowColor);
+//                }
+//            }
+//        }
+//    }
+//}
+
+// soft shadow
+float is_shadow(RayTriangleIntersection intersection, vector<ModelTriangle> &triangles, vec3 &light) {
+    vec3 shadow_rayDirection = light - intersection.intersectionPoint;
+    float closestDistance = std::numeric_limits<float>::max();
+
+    for (int i = 0; i < triangles.size(); i++) {
+        ModelTriangle triangle = triangles[i];
+        vec3 e0 = triangle.vertices[1] - triangle.vertices[0];
+        vec3 e1 = triangle.vertices[2] - triangle.vertices[0];
+        vec3 SPVector = intersection.intersectionPoint - triangle.vertices[0];
+        mat3 DEMatrix(-normalize(shadow_rayDirection), e0, e1);
+        vec3 possibleSolution = inverse(DEMatrix) * SPVector;
+        float t = possibleSolution.x, u = possibleSolution.y, v = possibleSolution.z;
+        if ((u >= 0.0) && (u <= 1.0) && (v >= 0.0) && (v <= 1.0) && (u + v) <= 1.0) {
+            if (t < length(shadow_rayDirection) && t > 0.01 && i != intersection.triangleIndex) {
+                closestDistance = std::min(closestDistance, t);
+            }
+        }
+    }
+    if (closestDistance < std::numeric_limits<float>::max()) {
+        return std::max(0.0f, 1.0f - closestDistance / length(shadow_rayDirection));
+    }
+    return 0.0f;
+}
+
+vector<vec3> getMutipleLight(){
+    vector<vec3> Mult_lights;
+    float startX = -0.4f;
+    float startY = 0.5f;
+    float startZ = 0.2f;
+    float stepX = 0.2f;
+    float stepZ = 0.2f;
+    int numX = 5;
+    int numZ = 6;
+    for (int i = 0; i < numX; ++i) {
+        for (int j = 0; j < numZ; ++j) {
+            float x = startX + i * stepX;
+            float z = startZ + j * stepZ;
+            Mult_lights.push_back(vec3(x, startY, z));
+        }
+    }
+    return Mult_lights;
+}
+
 void renderRayTracedScene(vector<ModelTriangle> triangles, DrawingWindow &window, float focalLength, float scaling_factor) {
+    vector<vec3> Mult_lights = getMutipleLight();
     for (int y = 0; y < window.height; y++) {
         for (int x = 0; x < window.width; x++) {
-            vec3 rayDirection = getRayDirectionFromCanvas(x,y,window.width,window.height,focalLength,scaling_factor);
+            vec3 rayDirection = getRayDirectionFromCanvas(x, y, window.width, window.height, focalLength, scaling_factor);
             RayTriangleIntersection r = getClosestValidIntersection(triangles, rayDirection);
+
             if (!isinf(r.distanceFromCamera)) {
                 r.intersectedTriangle.normal = calculateFaceNormal(r.intersectedTriangle);
-                Colour colour = calculateLighting(r,BoxLight);
-                uint32_t ray_Color = (255 << 24) + (int(colour.red) << 16) + (int(colour.green) << 8) + int(colour.blue);
-                if (!is_shadow(r, triangles, BoxLight)) {
-                    window.setPixelColour(x, y, ray_Color);
+                Colour accumulatedColour = {0, 0, 0};
+                float shadowAccumulator = 0.0f;
+                for (int l = 0; l < Mult_lights.size(); ++l) {
+                    float shadowIntensity = is_shadow(r, triangles, Mult_lights[l]);
+                    Colour colour = calculateLighting(r, Mult_lights[l]);
+                    accumulatedColour.red += colour.red * (1.0f - shadowIntensity);
+                    accumulatedColour.green += colour.green * (1.0f - shadowIntensity);
+                    accumulatedColour.blue += colour.blue * (1.0f - shadowIntensity);
                 }
-                else{
-                    uint32_t shadowColor = (255 << 24) + (colour.red/2 << 16) + (colour.green/2 << 8) + colour.blue/2;
-                    window.setPixelColour(x, y, shadowColor);
+                if (Mult_lights.size() > 0) {
+                    accumulatedColour.red /= Mult_lights.size();
+                    accumulatedColour.green /= Mult_lights.size();
+                    accumulatedColour.blue /= Mult_lights.size();
                 }
+                accumulatedColour.red = std::min(255, accumulatedColour.red);
+                accumulatedColour.green = std::min(255, accumulatedColour.green);
+                accumulatedColour.blue = std::min(255, accumulatedColour.blue);
+                uint32_t ray_Color = (255 << 24) + (int(accumulatedColour.red) << 16) + (int(accumulatedColour.green) << 8) + int(accumulatedColour.blue);
+                window.setPixelColour(x, y, ray_Color);
             }
         }
     }
@@ -615,7 +692,7 @@ void switchModes(DrawingWindow &window,SDL_Event event){
     vector<ModelTriangle> filledTriangle = loadObjFile("../cornell-box.obj",scalingFactor,loadMtlFile("../cornell-box.mtl"));
     vector<ModelTriangle> sphere = loadObjFile("../sphere.obj",scalingFactor,loadMtlFile("../textured-cornell-box.mtl"));
     vector<ModelTriangle> textureTriangle = loadObjFile("../textured-cornell-box.obj",scalingFactor,loadMtlFile("../textured-cornell-box.mtl"));
-    vector<ModelTriangle> logoTriangle = loadObjFile("../logo.obj", scalingFactor ,loadMtlFile("../materials.mtl"));
+    vector<ModelTriangle> logoTriangle = loadObjFile("../logo.obj", scalingFactor,loadMtlFile("../materials.mtl"));
 
     if (event.type == SDL_KEYDOWN) {
         // Camera translation
@@ -684,12 +761,12 @@ void switchModes(DrawingWindow &window,SDL_Event event){
                     vec3( 0.0, sin(M_PI/180), cos(M_PI/180))
             );
         }
-        if (event.key.keysym.sym == SDLK_x) BoxLight.x += translationAmount;
-        else if (event.key.keysym.sym == SDLK_z) BoxLight.x -= translationAmount;
-        else if (event.key.keysym.sym == SDLK_b) BoxLight.y -= translationAmount;
-        else if (event.key.keysym.sym == SDLK_n) BoxLight.y += translationAmount;
-        else if (event.key.keysym.sym == SDLK_c) BoxLight.z += translationAmount;
-        else if (event.key.keysym.sym == SDLK_v) BoxLight.z -= translationAmount;
+//        if (event.key.keysym.sym == SDLK_x) BoxLight.x += translationAmount;
+//        else if (event.key.keysym.sym == SDLK_z) BoxLight.x -= translationAmount;
+//        else if (event.key.keysym.sym == SDLK_b) BoxLight.y -= translationAmount;
+//        else if (event.key.keysym.sym == SDLK_n) BoxLight.y += translationAmount;
+//        else if (event.key.keysym.sym == SDLK_c) BoxLight.z += translationAmount;
+//        else if (event.key.keysym.sym == SDLK_v) BoxLight.z -= translationAmount;
         else if (event.key.keysym.sym == SDLK_h) look_At();
         else if (event.key.keysym.sym == SDLK_o) orbiting = !orbiting;
         else if (event.key.keysym.sym == SDLK_r) ResetCamera();
@@ -748,7 +825,6 @@ void switchModes(DrawingWindow &window,SDL_Event event){
             break;
     }
 }
-
 
 //void renderFrame(vector<ModelTriangle> &triangles, DrawingWindow &window, float focalLength) {
 //    const int frameCount = 48;
