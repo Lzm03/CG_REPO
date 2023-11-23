@@ -41,19 +41,21 @@ enum RenderMode {
     RENDER_LOGO
 };
 RenderMode currentRenderMode = RENDER_NONE;
+vector<vec3> circleLights;
 
-//void draw(DrawingWindow &window) {
-//    window.clearPixels();
-//    for (size_t y = 0; y < window.height; y++) {
-//        for (size_t x = 0; x < window.width; x++) {
-//            float red = 0;
-//            float green = 0;
-//            float blue = 0;
-//            uint32_t colour = (255 << 24) + (int(red) << 16) + (int(green) << 8) + int(blue);
-//            window.setPixelColour(x, y, colour);
-//        }
-//    }
-//}
+void draw(DrawingWindow &window) {
+    window.clearPixels();
+    for (size_t y = 0; y < window.height; y++) {
+        for (size_t x = 0; x < window.width; x++) {
+            float red = 0;
+            float green = 0;
+            float blue = 0;
+            uint32_t colour = (255 << 24) + (int(red) << 16) + (int(green) << 8) + int(blue);
+            window.setPixelColour(x, y, colour);
+        }
+    }
+}
+
 void drawline(CanvasPoint& from, CanvasPoint& to, Colour colour, DrawingWindow &window){
     float xDiff = to.x - from.x;
     float yDiff = to.y - from.y;
@@ -293,152 +295,6 @@ vec3 getRayDirectionFromCanvas(int x, int y,int width, int height, float focalLe
     return rayDirectionWorldSpace;
 }
 
-// hard shadow
-//bool is_shadow(RayTriangleIntersection intersection, vector<ModelTriangle> &triangles,vec3 &light) {
-//    vec3 shadow_rayDirection = light - intersection.intersectionPoint;
-//    for(int i = 0; i < triangles.size(); i++) {
-//        ModelTriangle triangle = triangles[i];
-//        vec3 e0 = triangle.vertices[1] - triangle.vertices[0];
-//        vec3 e1 = triangle.vertices[2] - triangle.vertices[0];
-//        vec3 SPVector = intersection.intersectionPoint - triangle.vertices[0];
-//        mat3 DEMatrix(-normalize(shadow_rayDirection), e0, e1);
-//        vec3 possibleSolution = inverse(DEMatrix) * SPVector;
-//        float t = possibleSolution.x, u = possibleSolution.y, v = possibleSolution.z;
-//
-//        if((u >= 0.0) && (u <= 1.0) && (v >= 0.0) && (v <= 1.0) && (u + v) <= 1.0) {
-//            if(t < length(shadow_rayDirection) && t > 0.01 && i != intersection.triangleIndex) {
-//                return true;
-//            }
-//        }
-//    }
-//    return false;
-//}
-//
-//void renderRayTracedScene(vector<ModelTriangle> triangles, DrawingWindow &window, float focalLength, float scaling_factor) {
-//    for (int y = 0; y < window.height; y++) {
-//        for (int x = 0; x < window.width; x++) {
-//            vec3 rayDirection = getRayDirectionFromCanvas(x,y,window.width,window.height,focalLength,scaling_factor);
-//            RayTriangleIntersection r = getClosestValidIntersection(triangles, rayDirection);
-//            if (!isinf(r.distanceFromCamera)) {
-//                r.intersectedTriangle.normal = calculateFaceNormal(r.intersectedTriangle);
-//                Colour colour = calculateLighting(r,BoxLight);
-//                uint32_t ray_Color = (255 << 24) + (int(colour.red) << 16) + (int(colour.green) << 8) + int(colour.blue);
-//                if (!is_shadow(r, triangles, BoxLight)) {
-//                    window.setPixelColour(x, y, ray_Color);
-//                }
-//                else{
-//                    uint32_t shadowColor = (255 << 24) + (colour.red/2 << 16) + (colour.green/2 << 8) + colour.blue/2;
-//                    window.setPixelColour(x, y, shadowColor);
-//                }
-//            }
-//        }
-//    }
-//}
-
-// soft shadow
-float is_shadow(RayTriangleIntersection intersection, vector<ModelTriangle> &triangles, vec3 &light) {
-    vec3 shadow_rayDirection = light - intersection.intersectionPoint;
-    float closestDistance = std::numeric_limits<float>::max();
-
-    for (int i = 0; i < triangles.size(); i++) {
-        ModelTriangle triangle = triangles[i];
-        vec3 e0 = triangle.vertices[1] - triangle.vertices[0];
-        vec3 e1 = triangle.vertices[2] - triangle.vertices[0];
-        vec3 SPVector = intersection.intersectionPoint - triangle.vertices[0];
-        mat3 DEMatrix(-normalize(shadow_rayDirection), e0, e1);
-        vec3 possibleSolution = inverse(DEMatrix) * SPVector;
-        float t = possibleSolution.x, u = possibleSolution.y, v = possibleSolution.z;
-        if ((u >= 0.0) && (u <= 1.0) && (v >= 0.0) && (v <= 1.0) && (u + v) <= 1.0) {
-            if (t < length(shadow_rayDirection) && t > 0.01 && i != intersection.triangleIndex) {
-                closestDistance = std::min(closestDistance, t);
-            }
-        }
-    }
-    if (closestDistance < std::numeric_limits<float>::max()) {
-        return std::max(0.7f, 0.8f - closestDistance / length(shadow_rayDirection));
-    }
-    return 0.0f;
-}
-
-vector<vec3> getBoxLights() {
-    vector<vec3> circleLights;
-    float radius = 0.15f;
-    float startY = 0.4f;
-    int numLights = 1;
-    for (int i = 0; i < numLights; ++i) {
-        float angle = 2.0f * M_PI * i / numLights;
-        float x = radius * cos(angle);
-        float z = radius * sin(angle);
-        circleLights.push_back(vec3(x, startY, z + 0.2f));
-    }
-    return circleLights;
-}
-
-void renderRayTracedScene(vector<ModelTriangle> triangles, DrawingWindow &window, float focalLength, float scaling_factor) {
-    vector<vec3> Mult_lights = getBoxLights();
-    for (int y = 0; y < window.height; y++) {
-        for (int x = 0; x < window.width; x++) {
-            vec3 rayDirection = getRayDirectionFromCanvas(x, y, window.width, window.height, focalLength, scaling_factor);
-            RayTriangleIntersection r = getClosestValidIntersection(triangles,cameraPosition,rayDirection,0);
-
-            if (!isinf(r.distanceFromCamera)) {
-                r.intersectedTriangle.normal = calculateFaceNormal(r.intersectedTriangle);
-                Colour accumulatedColour = {0, 0, 0};
-
-                if (r.intersectedTriangle.isMirror) {
-                    vec3 reflectionDirection = reflect(rayDirection, r.intersectedTriangle.normal);
-                    RayTriangleIntersection reflectionIntersection = getClosestValidIntersection(triangles, r.intersectionPoint + 0.001f * r.intersectedTriangle.normal, reflectionDirection, 1);
-                    if (!isinf(reflectionIntersection.distanceFromCamera)) {
-                        for (int l = 0; l < Mult_lights.size(); ++l) {
-                            Colour reflectionColour = calculateLighting(reflectionIntersection, Mult_lights[l]);
-                            accumulatedColour = reflectionColour;
-                        }
-                    }
-                } else {
-                    for (int l = 0; l < Mult_lights.size(); ++l) {
-                        float shadowIntensity = is_shadow(r, triangles, Mult_lights[l]);
-                        Colour colour = calculateLighting(r, Mult_lights[l]);
-                        accumulatedColour.red += colour.red * (1.0f - shadowIntensity);
-                        accumulatedColour.green += colour.green * (1.0f - shadowIntensity);
-                        accumulatedColour.blue += colour.blue * (1.0f - shadowIntensity);
-                    }
-                    if (Mult_lights.size() > 0) {
-                        accumulatedColour.red /= Mult_lights.size();
-                        accumulatedColour.green /= Mult_lights.size();
-                        accumulatedColour.blue /= Mult_lights.size();
-                    }
-                }
-                    accumulatedColour.red = std::min(255, accumulatedColour.red);
-                    accumulatedColour.green = std::min(255, accumulatedColour.green);
-                    accumulatedColour.blue = std::min(255, accumulatedColour.blue);
-                    uint32_t ray_Color =
-                            (255 << 24) + (int(accumulatedColour.red) << 16) + (int(accumulatedColour.green) << 8) +
-                            int(accumulatedColour.blue);
-                    window.setPixelColour(x, y, ray_Color);
-            } else {
-                Colour backgroundColor = {0, 0, 0};
-                uint32_t BackgroundColor = (255 << 24) + (backgroundColor.red << 16) + (backgroundColor.green << 8) + backgroundColor.blue;
-                window.setPixelColour(x, y, BackgroundColor);
-            }
-        }
-    }
-}
-
-void renderFlatSphere(vector<ModelTriangle> triangles, DrawingWindow &window, float focalLength, float scaling_factor) {
-    for (int y = 0; y < window.height; y++) {
-        for (int x = 0; x < window.width; x++) {
-            vec3 rayDirection = getRayDirectionFromCanvas(x,y,window.width,window.height,focalLength,scaling_factor);
-            RayTriangleIntersection r = getClosestValidIntersection(triangles,cameraPosition,rayDirection,1);
-            if (!isinf(r.distanceFromCamera)) {
-                r.intersectedTriangle.normal = calculateFaceNormal(r.intersectedTriangle);
-                Colour colour = calculateLighting(r,SphereLight);
-                uint32_t ray_Color = (255 << 24) + (int(colour.red) << 16) + (int(colour.green) << 8) + int(colour.blue);
-                    window.setPixelColour(x, y, ray_Color);
-            }
-        }
-    }
-}
-
 vector<ModelTriangle> calculateVertexNormals(vector<ModelTriangle> triangles) {
     for (auto& triangle : triangles) {
         triangle.normal = calculateFaceNormal(triangle);
@@ -517,6 +373,83 @@ vec3 getBarycentricCoordinates(vec3 point, ModelTriangle triangle) {
     return vec3(u, v, w);
 }
 
+// hard shadow
+//bool is_shadow(RayTriangleIntersection intersection, vector<ModelTriangle> &triangles,vec3 &light) {
+//    vec3 shadow_rayDirection = light - intersection.intersectionPoint;
+//    for(int i = 0; i < triangles.size(); i++) {
+//        ModelTriangle triangle = triangles[i];
+//        vec3 e0 = triangle.vertices[1] - triangle.vertices[0];
+//        vec3 e1 = triangle.vertices[2] - triangle.vertices[0];
+//        vec3 SPVector = intersection.intersectionPoint - triangle.vertices[0];
+//        mat3 DEMatrix(-normalize(shadow_rayDirection), e0, e1);
+//        vec3 possibleSolution = inverse(DEMatrix) * SPVector;
+//        float t = possibleSolution.x, u = possibleSolution.y, v = possibleSolution.z;
+//
+//        if((u >= 0.0) && (u <= 1.0) && (v >= 0.0) && (v <= 1.0) && (u + v) <= 1.0) {
+//            if(t < length(shadow_rayDirection) && t > 0.01 && i != intersection.triangleIndex) {
+//                return true;
+//            }
+//        }
+//    }
+//    return false;
+//}
+
+// soft shadow
+float is_shadow(RayTriangleIntersection intersection, vector<ModelTriangle> &triangles, vec3 &light) {
+    vec3 shadow_rayDirection = light - intersection.intersectionPoint;
+    float closestDistance = std::numeric_limits<float>::max();
+
+    for (int i = 0; i < triangles.size(); i++) {
+        ModelTriangle triangle = triangles[i];
+        vec3 e0 = triangle.vertices[1] - triangle.vertices[0];
+        vec3 e1 = triangle.vertices[2] - triangle.vertices[0];
+        vec3 SPVector = intersection.intersectionPoint - triangle.vertices[0];
+        mat3 DEMatrix(-normalize(shadow_rayDirection), e0, e1);
+        vec3 possibleSolution = inverse(DEMatrix) * SPVector;
+        float t = possibleSolution.x, u = possibleSolution.y, v = possibleSolution.z;
+        if ((u >= 0.0) && (u <= 1.0) && (v >= 0.0) && (v <= 1.0) && (u + v) <= 1.0) {
+            if (t < length(shadow_rayDirection) && t > 0.01 && i != intersection.triangleIndex) {
+                closestDistance = std::min(closestDistance, t);
+            }
+        }
+    }
+    if (closestDistance < std::numeric_limits<float>::max()) {
+        return std::max(0.7f, 0.8f - closestDistance / length(shadow_rayDirection));
+    }
+    return 0.0f;
+}
+
+vector<vec3> getBoxLights() {
+    float radius = 0.15f;
+    float startY = 0.4f;
+    int numLights = 30;
+    for (int i = 0; i < numLights; ++i) {
+        float angle = 2.0f * M_PI * i / numLights;
+        float x = radius * cos(angle);
+        float z = radius * sin(angle);
+        circleLights.push_back(vec3(x, startY, z + 0.5f));
+    }
+    return circleLights;
+}
+
+void renderFlatSphere(vector<ModelTriangle> triangles, DrawingWindow &window, float focalLength, float scaling_factor) {
+    vector<vec3> lights = getBoxLights();
+    for (int y = 0; y < window.height; y++) {
+        for (int x = 0; x < window.width; x++) {
+            vec3 rayDirection = getRayDirectionFromCanvas(x,y,window.width,window.height,focalLength,scaling_factor);
+            RayTriangleIntersection r = getClosestValidIntersection(triangles,cameraPosition,rayDirection,1);
+            if (!isinf(r.distanceFromCamera)) {
+                r.intersectedTriangle.normal = calculateFaceNormal(r.intersectedTriangle);
+                for (int i = 0; i < lights.size(); ++i) {
+                    Colour colour = calculateLighting(r,lights[i]);
+                    uint32_t ray_Color = (255 << 24) + (int(colour.red) << 16) + (int(colour.green) << 8) + int(colour.blue);
+                    window.setPixelColour(x, y, ray_Color);
+                }
+            }
+        }
+    }
+}
+
 void gouraud(vector<ModelTriangle> triangles, DrawingWindow &window, float focalLength, float scaling_factor) {
     for (int y = 0; y < window.height; y++) {
         for (int x = 0; x < window.width; x++) {
@@ -543,6 +476,7 @@ void gouraud(vector<ModelTriangle> triangles, DrawingWindow &window, float focal
 }
 
 void phong(vector<ModelTriangle> triangles, DrawingWindow &window, float focalLength, float scaling_factor) {
+    vector<vec3> lights = getBoxLights();
     for (int y = 0; y < window.height; y++) {
         for (int x = 0; x < window.width; x++) {
             vec3 rayDirection = getRayDirectionFromCanvas(x, y, window.width, window.height, focalLength, scaling_factor);
@@ -554,13 +488,95 @@ void phong(vector<ModelTriangle> triangles, DrawingWindow &window, float focalLe
                         barycentric.y * r.intersectedTriangle.vertexNormals[1] +
                         barycentric.z * r.intersectedTriangle.vertexNormals[2];
                 interpolatedNormal = normalize(interpolatedNormal);
-                    Colour colour = calculateLightingAtVertex(r, interpolatedNormal, 64.0f,SphereLight);
+                for (int i = 0; i < lights.size(); ++i) {
+                    Colour colour = calculateLightingAtVertex(r, interpolatedNormal, 64.0f, lights[i]);
                     uint32_t finalColor = (255 << 24) + (int(colour.red) << 16) + (int(colour.green) << 8) + int(colour.blue);
                     window.setPixelColour(x, y, finalColor);
+                }
             }
         }
     }
 }
+
+void renderRayTracedScene(vector<ModelTriangle> triangles, DrawingWindow &window, float focalLength, float scaling_factor) {
+    vector<vec3> Mult_lights = getBoxLights();
+    vector<ModelTriangle> sphereTriangles;
+    vector<ModelTriangle> sphereTriangles2;
+    vector<ModelTriangle> otherTriangles;
+
+    for (ModelTriangle& triangle : triangles) {
+        if (triangle.name == "sphere") {
+            sphereTriangles.push_back(triangle);
+        } else if(triangle.name == "sphere2"){
+            sphereTriangles2.push_back(triangle);
+        } else {
+            otherTriangles.push_back(triangle);
+        }
+    }
+    if (!otherTriangles.empty()) {
+        for (int y = 0; y < window.height; y++) {
+            for (int x = 0; x < window.width; x++) {
+                vec3 rayDirection = getRayDirectionFromCanvas(x, y, window.width, window.height, focalLength,
+                                                              scaling_factor);
+                RayTriangleIntersection r = getClosestValidIntersection(triangles, cameraPosition, rayDirection,
+                                                                        0);
+                if (!isinf(r.distanceFromCamera)) {
+                    r.intersectedTriangle.normal = calculateFaceNormal(r.intersectedTriangle);
+                    Colour accumulatedColour = {0, 0, 0};
+
+                    if (r.intersectedTriangle.isMirror) {
+                        vec3 reflectionDirection = reflect(rayDirection, r.intersectedTriangle.normal);
+                        RayTriangleIntersection reflectionIntersection = getClosestValidIntersection(triangles,
+                                                                                                     r.intersectionPoint +
+                                                                                                     0.001f *
+                                                                                                     r.intersectedTriangle.normal,
+                                                                                                     reflectionDirection,
+                                                                                                     1);
+                        if (!isinf(reflectionIntersection.distanceFromCamera)) {
+                            for (int l = 0; l < Mult_lights.size(); ++l) {
+                                Colour reflectionColour = calculateLighting(reflectionIntersection, Mult_lights[l]);
+                                accumulatedColour = reflectionColour;
+                            }
+                        }
+                    } else {
+                        for (int l = 0; l < Mult_lights.size(); ++l) {
+                            float shadowIntensity = is_shadow(r, triangles, Mult_lights[l]);
+                            Colour colour = calculateLighting(r, Mult_lights[l]);
+                            accumulatedColour.red += colour.red * (1.0f - shadowIntensity);
+                            accumulatedColour.green += colour.green * (1.0f - shadowIntensity);
+                            accumulatedColour.blue += colour.blue * (1.0f - shadowIntensity);
+                        }
+                        if (Mult_lights.size() > 0) {
+                            accumulatedColour.red /= Mult_lights.size();
+                            accumulatedColour.green /= Mult_lights.size();
+                            accumulatedColour.blue /= Mult_lights.size();
+                        }
+                    }
+                    accumulatedColour.red = std::min(255, accumulatedColour.red);
+                    accumulatedColour.green = std::min(255, accumulatedColour.green);
+                    accumulatedColour.blue = std::min(255, accumulatedColour.blue);
+                    uint32_t ray_Color =
+                            (255 << 24) + (int(accumulatedColour.red) << 16) + (int(accumulatedColour.green) << 8) +
+                            int(accumulatedColour.blue);
+                    window.setPixelColour(x, y, ray_Color);
+                } else {
+                    Colour backgroundColor = {0, 0, 0};
+                    uint32_t BackgroundColor =
+                            (255 << 24) + (backgroundColor.red << 16) + (backgroundColor.green << 8) +
+                            backgroundColor.blue;
+                    window.setPixelColour(x, y, BackgroundColor);
+                }
+            }
+        }
+    }
+    if(!sphereTriangles.empty()) {
+        renderFlatSphere(calculateVertexNormals(sphereTriangles), window, focalLength, scaling_factor);
+    }
+    if(!sphereTriangles.empty()){
+        phong(calculateVertexNormals(sphereTriangles2), window, focalLength, scaling_factor);
+    }
+}
+
 
 void handleEvent(SDL_Event event, DrawingWindow &window) {
 	if (event.type == SDL_KEYDOWN) {
@@ -618,6 +634,7 @@ vector<ModelTriangle> loadObjFile(const std::string& filename, float scalingFact
     string currentMaterial;
     string colour;
     bool mirror = false;
+    string currentObjectName;
 
     if (!file.is_open()) {
         cerr << "Error: Could not open file " << filename << endl;
@@ -628,6 +645,9 @@ vector<ModelTriangle> loadObjFile(const std::string& filename, float scalingFact
             continue;
         }
         std::vector<std::string> tokens = split(line, ' ');
+        if (tokens[0] == "o"){
+            currentObjectName = tokens[1];
+        }
         if (tokens[0] == "v") {
             vec3 vertex;
             vertex.x = std::stof(tokens[1]);
@@ -672,6 +692,7 @@ vector<ModelTriangle> loadObjFile(const std::string& filename, float scalingFact
                 triangle.texturePoints[1] = texturePoints[vt2];
                 triangle.texturePoints[2] = texturePoints[vt3];
             }
+            triangle.name = currentObjectName;
             triangles.push_back(triangle);
         }
         if (tokens[0] == "usemtl") {
@@ -727,7 +748,8 @@ void switchModes(DrawingWindow &window,SDL_Event event){
     float scalingFactor = 0.35f;
     float focalLength = 2.0f;
     vector<ModelTriangle> wireFrameTriangle = loadObjFile("../cornell-box.obj",scalingFactor,loadMtlFile("../cornell-box.mtl"));
-    vector<ModelTriangle> filledTriangle = loadObjFile("../cornell-box.obj",scalingFactor,loadMtlFile("../textured-cornell-box.mtl"));
+    vector<ModelTriangle> filledTriangle = loadObjFile("../cornell-box.obj",scalingFactor,loadMtlFile("../cornell-box.mtl"));
+    vector<ModelTriangle> mirrorTriangle =  loadObjFile("../cornell-box2.obj",scalingFactor,loadMtlFile("../cornell-box.mtl"));
     vector<ModelTriangle> sphere = loadObjFile("../Sphere.obj",scalingFactor,loadMtlFile("../cornell-box.mtl"));
     vector<ModelTriangle> textureTriangle = loadObjFile("../textured-cornell-box.obj",scalingFactor,loadMtlFile("../textured-cornell-box.mtl"));
     vector<ModelTriangle> logoTriangle = loadObjFile("../logo.obj", scalingFactor,loadMtlFile("../materials.mtl"));
@@ -799,15 +821,17 @@ void switchModes(DrawingWindow &window,SDL_Event event){
                     vec3( 0.0, sin(M_PI/180), cos(M_PI/180))
             );
         }
-//        if (event.key.keysym.sym == SDLK_x) BoxLight.x += translationAmount;
-//        else if (event.key.keysym.sym == SDLK_z) BoxLight.x -= translationAmount;
-//        else if (event.key.keysym.sym == SDLK_b) BoxLight.y -= translationAmount;
-//        else if (event.key.keysym.sym == SDLK_n) BoxLight.y += translationAmount;
-//        else if (event.key.keysym.sym == SDLK_c) BoxLight.z += translationAmount;
-//        else if (event.key.keysym.sym == SDLK_v) BoxLight.z -= translationAmount;
-        else if (event.key.keysym.sym == SDLK_h) look_At();
-        else if (event.key.keysym.sym == SDLK_o) orbiting = !orbiting;
-        else if (event.key.keysym.sym == SDLK_r) ResetCamera();
+        for (int i = 0; i < circleLights.size(); ++i) {
+            if (event.key.keysym.sym == SDLK_x) circleLights[i].x += translationAmount;
+            else if (event.key.keysym.sym == SDLK_z) circleLights[i].x -= translationAmount;
+            else if (event.key.keysym.sym == SDLK_b) circleLights[i].y -= translationAmount;
+            else if (event.key.keysym.sym == SDLK_n) circleLights[i].y += translationAmount;
+            else if (event.key.keysym.sym == SDLK_c) circleLights[i].z += translationAmount;
+            else if (event.key.keysym.sym == SDLK_v) circleLights[i].z -= translationAmount;
+        }
+        if (event.key.keysym.sym == SDLK_h) look_At();
+        if (event.key.keysym.sym == SDLK_o) orbiting = !orbiting;
+        if (event.key.keysym.sym == SDLK_r) ResetCamera();
         if (event.key.keysym.sym == SDLK_1) {
             currentRenderMode = RENDER_WIREFRAME;
         }
@@ -845,7 +869,7 @@ void switchModes(DrawingWindow &window,SDL_Event event){
             renderRasterising(textureTriangle,focalLength,window,300.0f);
             break;
         case RENDER_RayTRACED:
-            renderRayTracedScene(filledTriangle,window,focalLength,180.0f);
+            renderRayTracedScene(mirrorTriangle,window,focalLength,180.0f);
             break;
         case RENDER_FlatSphere:
             renderFlatSphere(sphere,window,focalLength,300.0f);
@@ -864,46 +888,56 @@ void switchModes(DrawingWindow &window,SDL_Event event){
     }
 }
 
-//void renderFrame(vector<ModelTriangle> &triangles, DrawingWindow &window, float focalLength) {
-//    const int frameCount = 48;
-//    const int n_zero = 5;
-//    const float cameraMoveStep = 0.075f;
-//
+void renderFrame(vector<ModelTriangle> &triangles, DrawingWindow &window, float focalLength) {
+    const int frameCount = 96;
+    const int n_zero = 5;
+    for (int frame = 0; frame < frameCount; ++frame) {
+        draw(window);
+        renderWireframe(triangles, window, focalLength, 500.0f);
+        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
+        window.savePPM("../output/" + frameNumber + ".ppm");
+        cout << "saved " << frame << endl;
+        float speed = -3.8 * M_PI / 180;
+        cameraPosition = cameraPosition * mat3(
+                vec3(cos(speed), 0.0, sin(speed)),
+                vec3(0.0, 1.0, 0.0),
+                vec3(-sin(speed), 0.0, cos(speed))
+        );
+        cameraOrientation = cameraOrientation * mat3(
+                vec3(cos(speed), 0.0, sin(speed)),
+                vec3(0.0, 1.0, 0.0),
+                vec3(-sin(speed), 0.0, cos(speed))
+        );
+        look_At();
+    }
 //    for (int frame = 0; frame < frameCount; ++frame) {
 //        draw(window);
-//        drawWireframe(triangles, cameraPosition, focalLength, window, cameraOrientation, 500.0f);
-//        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
-//        window.savePPM("../output/" + frameNumber + ".ppm");
-//        cout << "saved " << frame << endl;
-//    }
-//
-//    for (int frame = 0; frame < frameCount; ++frame) {
-//        draw(window);
-//        drawRasterisedModel(triangles, cameraPosition, focalLength, window, cameraOrientation, 500.0f);
-//        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
-//        window.savePPM("../output1/" + frameNumber + ".ppm");
-//        cout << "saved " << frame << endl;
-//    }
-//
-//    for (int frame = 0; frame < frameCount; ++frame) {
-//        draw(window);
-//        drawRayTracedScene(triangles,window,cameraPosition,focalLength,cameraOrientation,BoxLight,300.0f);
+//        renderRasterising(triangles, focalLength, window, 500.0f);
 //        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
 //        window.savePPM("../output2/" + frameNumber + ".ppm");
 //        cout << "saved " << frame << endl;
+//        float speed = -3.8 * M_PI / 180;
+//        cameraPosition = cameraPosition * mat3(
+//                vec3(cos(speed), 0.0, sin(speed)),
+//                vec3(0.0, 1.0, 0.0),
+//                vec3(-sin(speed), 0.0, cos(speed))
+//        );
+//        cameraOrientation = cameraOrientation * mat3(
+//                vec3(cos(speed), 0.0, sin(speed)),
+//                vec3(0.0, 1.0, 0.0),
+//                vec3(-sin(speed), 0.0, cos(speed))
+//        );
+//        look_At();
 //    }
-//
-//}
+}
 
 int main(int argc, char *argv[]) {
 	DrawingWindow window = DrawingWindow(WIDTH, HEIGHT, false);
 	SDL_Event event;
 
-//    vector<string> filenames = {"../cornell-box.obj", "../sphere.obj"};
-//    unordered_map<string, vector<ModelTriangle>> allTriangles = loadMultipleObjFiles(filenames, 0.35f, loadMtlFile("../cornell-box.mtl"));
-//    vector<ModelTriangle> box = allTriangles["../cornell-box.obj"];
-//    vector<ModelTriangle> sphere = allTriangles["../sphere.obj"];
-//    renderFrame(box,window,2.0f);
+    vector<ModelTriangle> wireFrameTriangle = loadObjFile("../cornell-box.obj",0.35f,loadMtlFile("../cornell-box.mtl"));
+    vector<ModelTriangle> mirrorTriangle =  loadObjFile("../cornell-box.obj",0.35f,loadMtlFile("../cornell-box.mtl"));
+    renderFrame(wireFrameTriangle,window,2.0f);
 
 	while (true) {
 		// We MUST poll for events - otherwise the window will freeze !
@@ -911,7 +945,6 @@ int main(int argc, char *argv[]) {
         switchModes(window,event);
         orbit();
 //		draw(window);
-
 		window.renderFrame();
 	}
 }
