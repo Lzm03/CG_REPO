@@ -11,8 +11,9 @@ struct ModelTriangle {
 	std::array<TexturePoint, 3> texturePoints{};
 	Colour colour{};
 	glm::vec3 normal{};
-    std::vector<glm::vec3> vertexNormals;
+    std::array<glm::vec3, 3> vertexNormals{};
     std::vector<Colour> vertexColours;
+    bool isMirror;
 
 	ModelTriangle();
 	ModelTriangle(const glm::vec3 &v0, const glm::vec3 &v1, const glm::vec3 &v2, Colour trigColour);

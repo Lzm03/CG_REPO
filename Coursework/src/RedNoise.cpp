@@ -54,108 +54,6 @@ RenderMode currentRenderMode = RENDER_NONE;
 //        }
 //    }
 //}
-
-vector<ModelTriangle> loadObjFile(const std::string& filename, float scalingFactor, unordered_map<string,Colour> colours) {
-    ifstream file(filename);
-    vector<ModelTriangle> triangles;
-    vector<vec3> vertices;
-    vector<TexturePoint> texturePoints;
-
-    if(!file.is_open()){
-        cerr<<"Error: Could not open file "<<filename<<endl;
-        return triangles;;
-    }
-
-    string line;
-    string currentMaterial;
-    string colour;
-
-    while(getline(file,line)){
-        if (line.empty()) {
-            continue;
-        }
-        std::vector<std::string> tokens = split(line, ' ');
-        if (tokens[0] == "v") {
-            vec3 vertex;
-            vertex.x= std::stof(tokens[1]);
-            vertex.y = std::stof(tokens[2]);
-            vertex.z = std::stof(tokens[3]);
-            vertex *= scalingFactor;
-            vertices.push_back(vertex);
-        }
-        if (tokens[0] == "vt"){
-            TexturePoint t;
-            t.x = stof(tokens[1]);
-            t.y = stof(tokens[2]);
-            texturePoints.push_back(t);
-        }
-        else if (tokens[0] == "f") {
-            if(tokens.size() < 4) continue; // Not a valid face definition.
-            vector<string> v1_tokens = split(tokens[1], '/');
-            vector<string> v2_tokens = split(tokens[2], '/');
-            vector<string> v3_tokens = split(tokens[3], '/');
-
-            if(v1_tokens.empty() || v2_tokens.empty() || v3_tokens.empty()) continue;
-
-            int v1 = stoi(v1_tokens[0]) - 1;
-            int v2 = stoi(v2_tokens[0]) - 1;
-            int v3 = stoi(v3_tokens[0]) - 1;
-
-            ModelTriangle triangle(vertices[v1], vertices[v2], vertices[v3], colours[currentMaterial]);
-
-            if (v1_tokens.size() > 1 && v1_tokens[1] != "" &&
-                v2_tokens.size() > 1 && v2_tokens[1] != "" &&
-                v3_tokens.size() > 1 && v3_tokens[1] != "")
-            {
-                int vt1 = stoi(v1_tokens[1]) - 1;
-                int vt2 = stoi(v2_tokens[1]) - 1;
-                int vt3 = stoi(v3_tokens[1]) - 1;
-
-                triangle.texturePoints[0] = texturePoints[vt1];
-                triangle.texturePoints[1] = texturePoints[vt2];
-                triangle.texturePoints[2] = texturePoints[vt3];
-            }
-            triangles.push_back(triangle);
-        }else if (tokens[0] == "usemtl") {
-            currentMaterial = tokens[1];
-        }
-    }
-    file.close();
-    return triangles;
-}
-
-unordered_map<string,Colour> loadMtlFile(const std::string& filename) {
-    ifstream file(filename);
-    string line;
-    string material;
-    unordered_map<string,Colour> colours;
-    while (getline(file, line)) {
-        if (line.empty()) {
-            continue;
-        }
-        std::vector<std::string> token = split(line,' ');
-        if (token[0]=="newmtl"){
-            material = token[1];
-        }
-        if(token[0]=="Kd"){
-            float r = std::stof(token[1]) ;
-            float g = std::stof(token[2]) ;
-            float b = std::stof(token[3]) ;
-            int red = static_cast<int>(r * 255);
-            int green = static_cast<int>(g * 255);
-            int blue = static_cast<int>(b * 255);
-            colours.insert({material, Colour(red, green, blue)});
-        }
-        if(token[0]=="map_Kd"){
-            Colour colour = colours[material];
-            colour.name = token[1];
-            colours[material] = colour;
-        }
-    }
-    file.close();
-    return colours;
-}
-
 void drawline(CanvasPoint& from, CanvasPoint& to, Colour colour, DrawingWindow &window){
     float xDiff = to.x - from.x;
     float yDiff = to.y - from.y;
@@ -310,25 +208,46 @@ void renderTexture(vector<ModelTriangle> triangles, float focalLength, DrawingWi
     }
 }
 
-RayTriangleIntersection getClosestValidIntersection(vector<ModelTriangle> &triangles, vec3 rayDirection) {
+vec3 calculateFaceNormal(ModelTriangle &triangle){
+    vec3 edge1 = triangle.vertices[1] - triangle.vertices[0];
+    vec3 edge2 = triangle.vertices[2] - triangle.vertices[0];
+    vec3 normal = normalize(cross(edge1, edge2));
+    return normal;
+}
+
+RayTriangleIntersection getClosestValidIntersection(vector<ModelTriangle> &triangles, vec3 rayOrigin, vec3 rayDirection, int depth) {
     RayTriangleIntersection r;
     r.distanceFromCamera = numeric_limits<float>::infinity();
+
+    if (depth >= 5) {
+        return  r;
+    }
     for (int i = 0; i < triangles.size(); ++i) {
         ModelTriangle triangle = triangles[i];
         vec3 e0 = triangle.vertices[1] - triangle.vertices[0];
         vec3 e1 = triangle.vertices[2] - triangle.vertices[0];
-        vec3 SPVector = cameraPosition - triangle.vertices[0];
+        vec3 SPVector = rayOrigin - triangle.vertices[0];
         mat3 DEMatrix(-rayDirection, e0, e1);
         vec3 possibleSolution = inverse(DEMatrix) * SPVector;
         float t = possibleSolution.x;
         float u = possibleSolution.y;
         float v = possibleSolution.z;
-        if (t > 0 && u >= 0 && u <= 1.0 && v >= 0.0 && v <= 1.0 && (u + v) <= 1.0) {
+
+        vec3 intersectionPoint = rayOrigin + t * rayDirection;
+
+        if (t > 0 && u >= 0 && u <= 1 && v >= 0 && v <= 1 && (u + v) <= 1) {
             if (r.distanceFromCamera > t) {
-                vec3 intersectionPoint = cameraPosition + possibleSolution.x * rayDirection;
-                float distanceFromCamera = t;
-                r = RayTriangleIntersection(intersectionPoint, distanceFromCamera, triangle, i);
+                r = RayTriangleIntersection(intersectionPoint, t, triangle, i);
             }
+        }
+    }
+     if (r.intersectedTriangle.isMirror && depth < 5) {
+        vec3 normal = calculateFaceNormal(r.intersectedTriangle);
+        vec3 reflectionRayDirection = reflect(rayDirection,normal);
+        vec3 newOrigin =  r.intersectionPoint + 0.001f * normal;
+        RayTriangleIntersection reflectedIntersection = getClosestValidIntersection(triangles, newOrigin, reflectionRayDirection, depth + 1);
+        if (!isinf(reflectedIntersection.distanceFromCamera)) {
+            r = reflectedIntersection;
         }
     }
     return r;
@@ -344,7 +263,7 @@ Colour calculateLighting(RayTriangleIntersection r, vec3 &light) {
 
     vec3 lightDirection = normalize(light - r.intersectionPoint);
     float distance = length(lightDirection);
-    float Intensity = 100 / (4 * M_PI * (pow(distance, 2)));
+    float Intensity = 40 / (4 * M_PI * (pow(distance, 2)));
     float proximityLight = std::max(0.0f, std::min(1.0f, Intensity));
     float angleOfIncidence = std::max(0.0f, dot(r.intersectedTriangle.normal, lightDirection));
 
@@ -372,13 +291,6 @@ vec3 getRayDirectionFromCanvas(int x, int y,int width, int height, float focalLe
     vec3 rayDirectionCameraSpace(-ndcX , -ndcY, -focalLength);
     rayDirectionWorldSpace = normalize(cameraOrientation * rayDirectionCameraSpace);
     return rayDirectionWorldSpace;
-}
-
-vec3 calculateFaceNormal(ModelTriangle &triangle){
-    vec3 edge1 = triangle.vertices[1] - triangle.vertices[0];
-    vec3 edge2 = triangle.vertices[2] - triangle.vertices[0];
-    vec3 normal = normalize(cross(edge1, edge2));
-    return normal;
 }
 
 // hard shadow
@@ -443,58 +355,70 @@ float is_shadow(RayTriangleIntersection intersection, vector<ModelTriangle> &tri
         }
     }
     if (closestDistance < std::numeric_limits<float>::max()) {
-        return std::max(0.0f, 1.0f - closestDistance / length(shadow_rayDirection));
+        return std::max(0.7f, 0.8f - closestDistance / length(shadow_rayDirection));
     }
     return 0.0f;
 }
 
-vector<vec3> getMutipleLight(){
-    vector<vec3> Mult_lights;
-    float startX = -0.4f;
-    float startY = 0.5f;
-    float startZ = 0.2f;
-    float stepX = 0.2f;
-    float stepZ = 0.2f;
-    int numX = 5;
-    int numZ = 6;
-    for (int i = 0; i < numX; ++i) {
-        for (int j = 0; j < numZ; ++j) {
-            float x = startX + i * stepX;
-            float z = startZ + j * stepZ;
-            Mult_lights.push_back(vec3(x, startY, z));
-        }
+vector<vec3> getBoxLights() {
+    vector<vec3> circleLights;
+    float radius = 0.15f;
+    float startY = 0.4f;
+    int numLights = 1;
+    for (int i = 0; i < numLights; ++i) {
+        float angle = 2.0f * M_PI * i / numLights;
+        float x = radius * cos(angle);
+        float z = radius * sin(angle);
+        circleLights.push_back(vec3(x, startY, z + 0.2f));
     }
-    return Mult_lights;
+    return circleLights;
 }
 
 void renderRayTracedScene(vector<ModelTriangle> triangles, DrawingWindow &window, float focalLength, float scaling_factor) {
-    vector<vec3> Mult_lights = getMutipleLight();
+    vector<vec3> Mult_lights = getBoxLights();
     for (int y = 0; y < window.height; y++) {
         for (int x = 0; x < window.width; x++) {
             vec3 rayDirection = getRayDirectionFromCanvas(x, y, window.width, window.height, focalLength, scaling_factor);
-            RayTriangleIntersection r = getClosestValidIntersection(triangles, rayDirection);
+            RayTriangleIntersection r = getClosestValidIntersection(triangles,cameraPosition,rayDirection,0);
 
             if (!isinf(r.distanceFromCamera)) {
                 r.intersectedTriangle.normal = calculateFaceNormal(r.intersectedTriangle);
                 Colour accumulatedColour = {0, 0, 0};
-                float shadowAccumulator = 0.0f;
-                for (int l = 0; l < Mult_lights.size(); ++l) {
-                    float shadowIntensity = is_shadow(r, triangles, Mult_lights[l]);
-                    Colour colour = calculateLighting(r, Mult_lights[l]);
-                    accumulatedColour.red += colour.red * (1.0f - shadowIntensity);
-                    accumulatedColour.green += colour.green * (1.0f - shadowIntensity);
-                    accumulatedColour.blue += colour.blue * (1.0f - shadowIntensity);
+
+                if (r.intersectedTriangle.isMirror) {
+                    vec3 reflectionDirection = reflect(rayDirection, r.intersectedTriangle.normal);
+                    RayTriangleIntersection reflectionIntersection = getClosestValidIntersection(triangles, r.intersectionPoint + 0.001f * r.intersectedTriangle.normal, reflectionDirection, 1);
+                    if (!isinf(reflectionIntersection.distanceFromCamera)) {
+                        for (int l = 0; l < Mult_lights.size(); ++l) {
+                            Colour reflectionColour = calculateLighting(reflectionIntersection, Mult_lights[l]);
+                            accumulatedColour = reflectionColour;
+                        }
+                    }
+                } else {
+                    for (int l = 0; l < Mult_lights.size(); ++l) {
+                        float shadowIntensity = is_shadow(r, triangles, Mult_lights[l]);
+                        Colour colour = calculateLighting(r, Mult_lights[l]);
+                        accumulatedColour.red += colour.red * (1.0f - shadowIntensity);
+                        accumulatedColour.green += colour.green * (1.0f - shadowIntensity);
+                        accumulatedColour.blue += colour.blue * (1.0f - shadowIntensity);
+                    }
+                    if (Mult_lights.size() > 0) {
+                        accumulatedColour.red /= Mult_lights.size();
+                        accumulatedColour.green /= Mult_lights.size();
+                        accumulatedColour.blue /= Mult_lights.size();
+                    }
                 }
-                if (Mult_lights.size() > 0) {
-                    accumulatedColour.red /= Mult_lights.size();
-                    accumulatedColour.green /= Mult_lights.size();
-                    accumulatedColour.blue /= Mult_lights.size();
-                }
-                accumulatedColour.red = std::min(255, accumulatedColour.red);
-                accumulatedColour.green = std::min(255, accumulatedColour.green);
-                accumulatedColour.blue = std::min(255, accumulatedColour.blue);
-                uint32_t ray_Color = (255 << 24) + (int(accumulatedColour.red) << 16) + (int(accumulatedColour.green) << 8) + int(accumulatedColour.blue);
-                window.setPixelColour(x, y, ray_Color);
+                    accumulatedColour.red = std::min(255, accumulatedColour.red);
+                    accumulatedColour.green = std::min(255, accumulatedColour.green);
+                    accumulatedColour.blue = std::min(255, accumulatedColour.blue);
+                    uint32_t ray_Color =
+                            (255 << 24) + (int(accumulatedColour.red) << 16) + (int(accumulatedColour.green) << 8) +
+                            int(accumulatedColour.blue);
+                    window.setPixelColour(x, y, ray_Color);
+            } else {
+                Colour backgroundColor = {0, 0, 0};
+                uint32_t BackgroundColor = (255 << 24) + (backgroundColor.red << 16) + (backgroundColor.green << 8) + backgroundColor.blue;
+                window.setPixelColour(x, y, BackgroundColor);
             }
         }
     }
@@ -504,7 +428,7 @@ void renderFlatSphere(vector<ModelTriangle> triangles, DrawingWindow &window, fl
     for (int y = 0; y < window.height; y++) {
         for (int x = 0; x < window.width; x++) {
             vec3 rayDirection = getRayDirectionFromCanvas(x,y,window.width,window.height,focalLength,scaling_factor);
-            RayTriangleIntersection r = getClosestValidIntersection(triangles, rayDirection);
+            RayTriangleIntersection r = getClosestValidIntersection(triangles,cameraPosition,rayDirection,1);
             if (!isinf(r.distanceFromCamera)) {
                 r.intersectedTriangle.normal = calculateFaceNormal(r.intersectedTriangle);
                 Colour colour = calculateLighting(r,SphereLight);
@@ -520,27 +444,27 @@ vector<ModelTriangle> calculateVertexNormals(vector<ModelTriangle> triangles) {
         triangle.normal = calculateFaceNormal(triangle);
     }
     for (auto& triangle : triangles) {
-        triangle.vertexNormals.resize(triangle.vertices.size());
-        for (int v = 0; v < triangle.vertices.size(); ++v) {
+        for (int v = 0; v < 3; ++v) {
             vec3 vertexNormal = vec3(0.0f);
             int count = 0;
             for (auto& otherTriangle : triangles) {
-                for (auto& otherVertex : otherTriangle.vertices) {
-                    if (triangle.vertices[v] == otherVertex) {
+                for (int ov = 0; ov < 3; ++ov) {
+                    if (triangle.vertices[v] == otherTriangle.vertices[ov]) {
                         vertexNormal += otherTriangle.normal;
                         count++;
                     }
                 }
             }
             if (count != 0) {
-                triangle.vertexNormals[v] = normalize(vertexNormal / static_cast<float>(count));
+                triangle.vertexNormals[v] = vertexNormal / static_cast<float>(count);
             }
         }
     }
+
     return triangles;
 }
 
-Colour calculateLightingAtVertex(RayTriangleIntersection r, vec3 normal, float shininess ) {
+Colour calculateLightingAtVertex(RayTriangleIntersection r, vec3 normal, float shininess, vec3 sphereLight) {
     float ambientStrength = 0.2f;
     Colour ambientColour = {
             int(r.intersectedTriangle.colour.red * ambientStrength),
@@ -548,9 +472,9 @@ Colour calculateLightingAtVertex(RayTriangleIntersection r, vec3 normal, float s
             int(r.intersectedTriangle.colour.blue * ambientStrength)
     };
 
-    vec3 lightDirection = normalize(SphereLight - r.intersectionPoint);
+    vec3 lightDirection = normalize(sphereLight - r.intersectionPoint);
     float distance = length(lightDirection);
-    float Intensity = 40 / (4 * M_PI * (pow(distance, 2)));
+    float Intensity = 10 / (4 * M_PI * (pow(distance, 2)));
     float proximityLight = std::max(0.0f, std::min(1.0f, Intensity));
 
     float diffuseLight = std::max(dot(normal, lightDirection), 0.0f);
@@ -597,11 +521,11 @@ void gouraud(vector<ModelTriangle> triangles, DrawingWindow &window, float focal
     for (int y = 0; y < window.height; y++) {
         for (int x = 0; x < window.width; x++) {
             vec3 rayDirection = getRayDirectionFromCanvas(x, y, window.width, window.height, focalLength, scaling_factor);
-            RayTriangleIntersection r = getClosestValidIntersection(triangles, rayDirection);
+            RayTriangleIntersection r = getClosestValidIntersection(triangles,cameraPosition,rayDirection,1);
             for (auto& triangle : triangles) {
                 triangle.vertexColours.resize(triangle.vertices.size());
                 for (int v = 0; v < triangle.vertices.size(); ++v) {
-                    triangle.vertexColours[v] = calculateLightingAtVertex(r,triangle.vertexNormals[v],64.0f);
+                    triangle.vertexColours[v] = calculateLightingAtVertex(r,triangle.vertexNormals[v],64.0f,SphereLight);
                 }
             }
             if (!isinf(r.distanceFromCamera)) {
@@ -622,7 +546,7 @@ void phong(vector<ModelTriangle> triangles, DrawingWindow &window, float focalLe
     for (int y = 0; y < window.height; y++) {
         for (int x = 0; x < window.width; x++) {
             vec3 rayDirection = getRayDirectionFromCanvas(x, y, window.width, window.height, focalLength, scaling_factor);
-            RayTriangleIntersection r = getClosestValidIntersection(triangles, rayDirection);
+            RayTriangleIntersection r = getClosestValidIntersection(triangles,cameraPosition,rayDirection,1);
             if (!isinf(r.distanceFromCamera)) {
                 vec3 barycentric = getBarycentricCoordinates(r.intersectionPoint, r.intersectedTriangle);
                 vec3 interpolatedNormal =
@@ -630,9 +554,9 @@ void phong(vector<ModelTriangle> triangles, DrawingWindow &window, float focalLe
                         barycentric.y * r.intersectedTriangle.vertexNormals[1] +
                         barycentric.z * r.intersectedTriangle.vertexNormals[2];
                 interpolatedNormal = normalize(interpolatedNormal);
-                Colour colour = calculateLightingAtVertex(r, interpolatedNormal, 64.0f);
-                uint32_t finalColor = (255 << 24) + (int(colour.red) << 16) + (int(colour.green) << 8) + int(colour.blue);
-                window.setPixelColour(x, y, finalColor);
+                    Colour colour = calculateLightingAtVertex(r, interpolatedNormal, 64.0f,SphereLight);
+                    uint32_t finalColor = (255 << 24) + (int(colour.red) << 16) + (int(colour.green) << 8) + int(colour.blue);
+                    window.setPixelColour(x, y, finalColor);
             }
         }
     }
@@ -684,13 +608,127 @@ void ResetCamera() {
             vec3(0.0,0.0,1.0));
 }
 
+vector<ModelTriangle> loadObjFile(const std::string& filename, float scalingFactor, unordered_map<string,Colour> colours) {
+    ifstream file(filename);
+    vector<ModelTriangle> triangles;
+    vector<vec3> vertices;
+    vector<TexturePoint> texturePoints;
+    vector<vec3> normals;
+    string line;
+    string currentMaterial;
+    string colour;
+    bool mirror = false;
+
+    if (!file.is_open()) {
+        cerr << "Error: Could not open file " << filename << endl;
+        return triangles;;
+    }
+    while (getline(file, line)) {
+        if (line.empty()) {
+            continue;
+        }
+        std::vector<std::string> tokens = split(line, ' ');
+        if (tokens[0] == "v") {
+            vec3 vertex;
+            vertex.x = std::stof(tokens[1]);
+            vertex.y = std::stof(tokens[2]);
+            vertex.z = std::stof(tokens[3]);
+            vertex *= scalingFactor;
+            vertices.push_back(vertex);
+        }
+        if (tokens[0] == "vt") {
+            TexturePoint t;
+            t.x = stof(tokens[1]);
+            t.y = stof(tokens[2]);
+            texturePoints.push_back(t);
+        } else if (tokens[0] == "f") {
+            if (tokens.size() < 4) continue;
+            vector<string> v1_tokens = split(tokens[1], '/');
+            vector<string> v2_tokens = split(tokens[2], '/');
+            vector<string> v3_tokens = split(tokens[3], '/');
+            if (v1_tokens.empty() || v2_tokens.empty() || v3_tokens.empty()) continue;
+
+            int v1 = stoi(v1_tokens[0]) - 1;
+            int v2 = stoi(v2_tokens[0]) - 1;
+            int v3 = stoi(v3_tokens[0]) - 1;
+
+            ModelTriangle triangle(vertices[v1], vertices[v2], vertices[v3], colours[currentMaterial]);
+            if (!normals.empty()) {
+                triangle.vertexNormals[0] = normals[stoi(v1_tokens[2]) - 1];
+                triangle.vertexNormals[1] = normals[stoi(v2_tokens[2]) - 1];
+                triangle.vertexNormals[2] = normals[stoi(v3_tokens[2]) - 1];
+            }
+            triangle.isMirror = mirror;
+            triangle.normal = cross(vec3(triangle.vertices[1] - triangle.vertices[0]),
+                                    vec3(triangle.vertices[2] - triangle.vertices[0]));
+            if (v1_tokens.size() > 1 && v1_tokens[1] != "" &&
+                v2_tokens.size() > 1 && v2_tokens[1] != "" &&
+                v3_tokens.size() > 1 && v3_tokens[1] != "") {
+                int vt1 = stoi(v1_tokens[1]) - 1;
+                int vt2 = stoi(v2_tokens[1]) - 1;
+                int vt3 = stoi(v3_tokens[1]) - 1;
+
+                triangle.texturePoints[0] = texturePoints[vt1];
+                triangle.texturePoints[1] = texturePoints[vt2];
+                triangle.texturePoints[2] = texturePoints[vt3];
+            }
+            triangles.push_back(triangle);
+        }
+        if (tokens[0] == "usemtl") {
+            mirror = (tokens[1] == "Mirror");
+            currentMaterial = tokens[1];
+        }
+        if (tokens[0] == "vn") {
+            vec3 normal;
+            normal.x = std::stof(tokens[1]);
+            normal.y = std::stof(tokens[2]);
+            normal.z = std::stof(tokens[3]);
+            normals.push_back(normal);
+        }
+    }
+        file.close();
+        return triangles;
+}
+
+unordered_map<string,Colour> loadMtlFile(const std::string& filename) {
+    ifstream file(filename);
+    string line;
+    string material;
+    unordered_map<string,Colour> colours;
+    while (getline(file, line)) {
+        if (line.empty()) {
+            continue;
+        }
+        std::vector<std::string> token = split(line,' ');
+        if (token[0]=="newmtl"){
+            material = token[1];
+        }
+        if(token[0]=="Kd"){
+            float r = std::stof(token[1]) ;
+            float g = std::stof(token[2]) ;
+            float b = std::stof(token[3]) ;
+            int red = static_cast<int>(r * 255);
+            int green = static_cast<int>(g * 255);
+            int blue = static_cast<int>(b * 255);
+            colours.insert({material, Colour(red, green, blue)});
+        }
+        if(token[0]=="map_Kd"){
+            Colour colour = colours[material];
+            colour.name = token[1];
+            colours[material] = colour;
+        }
+    }
+    file.close();
+    return colours;
+}
+
 void switchModes(DrawingWindow &window,SDL_Event event){
     float translationAmount = 0.1f;
     float scalingFactor = 0.35f;
     float focalLength = 2.0f;
     vector<ModelTriangle> wireFrameTriangle = loadObjFile("../cornell-box.obj",scalingFactor,loadMtlFile("../cornell-box.mtl"));
-    vector<ModelTriangle> filledTriangle = loadObjFile("../cornell-box.obj",scalingFactor,loadMtlFile("../cornell-box.mtl"));
-    vector<ModelTriangle> sphere = loadObjFile("../sphere.obj",scalingFactor,loadMtlFile("../textured-cornell-box.mtl"));
+    vector<ModelTriangle> filledTriangle = loadObjFile("../cornell-box.obj",scalingFactor,loadMtlFile("../textured-cornell-box.mtl"));
+    vector<ModelTriangle> sphere = loadObjFile("../Sphere.obj",scalingFactor,loadMtlFile("../cornell-box.mtl"));
     vector<ModelTriangle> textureTriangle = loadObjFile("../textured-cornell-box.obj",scalingFactor,loadMtlFile("../textured-cornell-box.mtl"));
     vector<ModelTriangle> logoTriangle = loadObjFile("../logo.obj", scalingFactor,loadMtlFile("../materials.mtl"));
 
