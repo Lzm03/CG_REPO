@@ -19,12 +19,19 @@ Kd 1.000000 1.000000 0.000000
 newmtl Magenta
 Kd 1.000000 0.000000 1.000000
 
-newmtl Mirror
-Kd 1.000000 1.000000 1.000000
-
 newmtl Cyan
 Kd 0.000000 1.000000 1.000000
 
 newmtl logo
 Kd 1.000000 1.000000 1.000000
 map_Kd logo.ppm
+
+newmtl Cobbles
+Kd 1.000000 1.000000 1.000000
+map_Kd texture.ppm
+
+newmtl Mirror
+Kd 1.000000 1.000000 1.000000
+
+newmtl Glass
+Kd 1.000000 1.000000 1.000000

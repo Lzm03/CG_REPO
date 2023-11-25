@@ -1,4 +1,4 @@
-mtllib textured-cornell-box.mtl
+mtllib cornell-box.mtl
 
 o sphere
 usemtl Red

@@ -24,17 +24,16 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/.ninja_deps" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/.ninja_deps" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/.ninja_log" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/.ninja_log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/RedNoise.dir/libs/sdw/ModelTriangle.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/RedNoise.dir/libs/sdw/ModelTriangle.cpp.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/RedNoise.dir/libs/sdw/RayTriangleIntersection.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/RedNoise.dir/libs/sdw/RayTriangleIntersection.cpp.o" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/RedNoise.dir/src/RedNoise.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/RedNoise.dir/src/RedNoise.cpp.o" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/RedNoise" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/RedNoise" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cornell-box.mtl" beforeDir="false" afterPath="$PROJECT_DIR$/cornell-box.mtl" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cornell-box.obj" beforeDir="false" afterPath="$PROJECT_DIR$/cornell-box.obj" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/libs/sdw/ModelTriangle.h" beforeDir="false" afterPath="$PROJECT_DIR$/libs/sdw/ModelTriangle.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/logo.obj" beforeDir="false" afterPath="$PROJECT_DIR$/logo.obj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/materials.mtl" beforeDir="false" afterPath="$PROJECT_DIR$/materials.mtl" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/RedNoise.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/RedNoise.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../RedNoise/cmake-build-debug/Testing/Temporary/LastTest.log" beforeDir="false" afterPath="$PROJECT_DIR$/../RedNoise/cmake-build-debug/Testing/Temporary/LastTest.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../RedNoise/cornell-box.mtl" beforeDir="false" afterPath="$PROJECT_DIR$/../RedNoise/cornell-box.mtl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../RedNoise/cornell-box.obj" beforeDir="false" afterPath="$PROJECT_DIR$/../RedNoise/cornell-box.obj" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -66,6 +65,7 @@
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
@@ -112,6 +112,10 @@
       <workItem from="1700654392652" duration="840000" />
       <workItem from="1700661315741" duration="53555000" />
       <workItem from="1700770650251" duration="534000" />
+      <workItem from="1700771196589" duration="12525000" />
+      <workItem from="1700790594468" duration="2700000" />
+      <workItem from="1700834041535" duration="11875000" />
+      <workItem from="1700849047305" duration="26056000" />
     </task>
     <servers />
   </component>

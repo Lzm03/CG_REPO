@@ -15,6 +15,7 @@ struct ModelTriangle {
     std::vector<Colour> vertexColours;
     bool isMirror;
     std::string name;
+    bool isGlass;
 
 	ModelTriangle();
 	ModelTriangle(const glm::vec3 &v0, const glm::vec3 &v1, const glm::vec3 &v2, Colour trigColour);
