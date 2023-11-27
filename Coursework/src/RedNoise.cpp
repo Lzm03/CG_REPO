@@ -30,6 +30,7 @@ vec3 cameraPosition(0.0f, 0.0f, 4.0f);
 vec3 SphereLight(0.0f,1.5f, 3.5f);
 vec3 BoxLight(0.0,0.5,0.2);
 vector<vec3> circleLights;
+
 Colour processRayIntersection(RayTriangleIntersection r, vec3 rayDirection, vector<ModelTriangle> triangles, vector<vec3> Mult_lights, int depth);
 
 enum RenderMode {
@@ -411,7 +412,7 @@ float is_shadow(RayTriangleIntersection intersection, vector<ModelTriangle> &tri
 }
 
 vector<vec3> getcircleLights() {
-    int numLights = 30;
+    int numLights = 1;
     float radius = 0.12f;
     for (int i = 0; i < numLights; ++i) {
         float angle = 2 * M_PI * i / numLights;
@@ -445,12 +446,10 @@ void gouraud(vector<ModelTriangle> triangles, DrawingWindow &window, float focal
         for (int x = 0; x < window.width; x++) {
             vec3 rayDirection = getRayDirectionFromCanvas(x, y, window.width, window.height, focalLength, scaling_factor);
             RayTriangleIntersection r = getClosestValidIntersection(triangles,cameraPosition,rayDirection,1);
-            for (auto& triangle : triangles) {
-                triangle.vertexColours.resize(triangle.vertices.size());
-                for (int v = 0; v < triangle.vertices.size(); ++v) {
-                    triangle.vertexColours[v] = calculateLightingAtVertex(r,triangle.vertexNormals[v],64.0f,SphereLight);
+                r.intersectedTriangle.vertexColours.resize(r.intersectedTriangle.vertices.size());
+                for (int v = 0; v < r.intersectedTriangle.vertices.size(); ++v) {
+                    r.intersectedTriangle.vertexColours[v] = calculateLightingAtVertex(r,r.intersectedTriangle.vertexNormals[v],64.0f,SphereLight);
                 }
-            }
             if (!isinf(r.distanceFromCamera)) {
                 vec3 barycentric = getBarycentricCoordinates(r.intersectionPoint, r.intersectedTriangle);
                 Colour colour;
@@ -489,7 +488,7 @@ void phong(vector<ModelTriangle> triangles, DrawingWindow &window, float focalLe
 }
 
 float calculateFresnelEffect(const vec3 &I, const vec3 &N, float refractiveIndex) {
-    float cosTheta = -dot(normalize(I), normalize(N));  // 确保cosTheta是正值
+    float cosTheta = -dot(normalize(I), normalize(N));
     float R0 = pow((1.0f - refractiveIndex) / (1.0f + refractiveIndex), 2);
     return R0 + (1 - R0) * pow(1 - cosTheta, 5);
 }
@@ -518,7 +517,7 @@ Colour handleMirrorReflection(const RayTriangleIntersection r, const vec3 reflec
 }
 
 Colour handleGlass(const RayTriangleIntersection& r, const vec3& rayDirection, const vec3& normal, vector<ModelTriangle> &triangles, vector<vec3> &Mult_lights, int depth) {
-    vec3 refractedDirection = refract(rayDirection, normal, 1.0f); // 使用正确的折射率
+    vec3 refractedDirection = refract(rayDirection, normal, 1.0f);
     if (!isnan(refractedDirection.x)) {
         vec3 refractedRayOrigin = r.intersectionPoint + refractedDirection * 0.001f;
         RayTriangleIntersection refractionIntersection = getClosestValidIntersection(triangles, refractedRayOrigin, refractedDirection, depth + 1);
@@ -559,6 +558,38 @@ Colour handleDiffuse(const RayTriangleIntersection& r, vector<ModelTriangle> tri
     return accumulatedColour;
 }
 
+vec2 getTextureCoordinates(RayTriangleIntersection intersection) {
+    vec3 barycentric = getBarycentricCoordinates(intersection.intersectionPoint, intersection.intersectedTriangle);
+    TexturePoint uv0 = intersection.intersectedTriangle.texturePoints[0];
+    TexturePoint uv1 = intersection.intersectedTriangle.texturePoints[1];
+    TexturePoint uv2 = intersection.intersectedTriangle.texturePoints[2];
+
+    float u = uv0.x * barycentric.x + uv1.x * barycentric.y + uv2.x * barycentric.z;
+    float v = uv0.y * barycentric.x + uv1.y * barycentric.y + uv2.y * barycentric.z;
+
+    return vec2(u, v);
+}
+
+uint32_t get_texture(RayTriangleIntersection r, TextureMap texture) {
+    ModelTriangle t = r.intersectedTriangle;
+
+    float x = ((1 - r.u - r.v) * t.texturePoints[0].x + r.u * t.texturePoints[1].x + r.v * t.texturePoints[2].x);
+    float y = ((1 - r.u - r.v) * t.texturePoints[0].y + r.u * t.texturePoints[1].y + r.v * t.texturePoints[2].y);
+
+    x *= texture.width;
+    y *= texture.height;
+
+    return texture.pixels[round(y)*texture.width + round(x)];
+}
+
+Colour mixColours(const Colour& colour1, const Colour& colour2) {
+    int red = (colour1.red + colour2.red) / 2;
+    int green = (colour1.green + colour2.green) / 2;
+    int blue = (colour1.blue + colour2.blue) / 2;
+
+    return Colour(red, green, blue);
+}
+
 Colour processRayIntersection(RayTriangleIntersection r, vec3 rayDirection, vector<ModelTriangle> triangles, vector<vec3> Mult_lights, int depth) {
     Colour accumulatedColour = {0, 0, 0};
     if (depth >= 10) {
@@ -577,6 +608,16 @@ Colour processRayIntersection(RayTriangleIntersection r, vec3 rayDirection, vect
     }
     else {
         accumulatedColour = handleDiffuse(r, triangles,Mult_lights);
+//        if (!r.intersectedTriangle.colour.name.empty()) {
+//            vec2 textureCoordinates = getTextureCoordinates(r);
+//            uint32_t t = get_texture(r,"../"+ r.intersectedTriangle.colour.name);
+//            float r = (t >> 16) & 0xff;
+//            float g = (t >>  8) & 0xff;
+//            float b = t & 0xff;
+//            Colour textureColour = Colour(int(r), int(g), int(b));
+//
+//            accumulatedColour = mixColours(accumulatedColour, textureColour);
+//        }
     }
     return accumulatedColour;
 }
@@ -628,22 +669,22 @@ void renderRayTracedScene(vector<ModelTriangle> triangles, DrawingWindow &window
     if(!sphereTriangles2.empty()){
         phong(sphereTriangles2, window, focalLength, scaling_factor);
     }
-//    if(!sphereTriangles3.empty()){
-//        gouraud(sphereTriangles3,window,focalLength,scaling_factor);
-//    }
+    if(!sphereTriangles3.empty()){
+        gouraud(sphereTriangles3,window,focalLength,scaling_factor);
+    }
 }
 
 
 void handleEvent(SDL_Event event, DrawingWindow &window) {
-	if (event.type == SDL_KEYDOWN) {
-		if (event.key.keysym.sym == SDLK_LEFT) std::cout << "LEFT" << std::endl;
-		else if (event.key.keysym.sym == SDLK_RIGHT) std::cout << "RIGHT" << std::endl;
-		else if (event.key.keysym.sym == SDLK_UP) std::cout << "UP" << std::endl;
-		else if (event.key.keysym.sym == SDLK_DOWN) std::cout << "DOWN" << std::endl;
-	} else if (event.type == SDL_MOUSEBUTTONDOWN) {
-		window.savePPM("output.ppm");
-		window.saveBMP("output.bmp");
-	}
+    if (event.type == SDL_KEYDOWN) {
+        if (event.key.keysym.sym == SDLK_LEFT) std::cout << "LEFT" << std::endl;
+        else if (event.key.keysym.sym == SDLK_RIGHT) std::cout << "RIGHT" << std::endl;
+        else if (event.key.keysym.sym == SDLK_UP) std::cout << "UP" << std::endl;
+        else if (event.key.keysym.sym == SDLK_DOWN) std::cout << "DOWN" << std::endl;
+    } else if (event.type == SDL_MOUSEBUTTONDOWN) {
+        window.savePPM("output.ppm");
+        window.saveBMP("output.bmp");
+    }
 }
 
 void look_At() {
@@ -766,8 +807,8 @@ vector<ModelTriangle> loadObjFile(const std::string& filename, float scalingFact
             normals.push_back(normal);
         }
     }
-        file.close();
-        return triangles;
+    file.close();
+    return triangles;
 }
 
 unordered_map<string,Colour> loadMtlFile(const std::string& filename) {
@@ -828,14 +869,14 @@ void switchModes(DrawingWindow &window,SDL_Event event){
                     vec3( 1.0,    0.0,    0.0),
                     vec3( 0.0, cos(M_PI/180),-sin(M_PI/180)),
                     vec3( 0.0, sin(M_PI/180), cos(M_PI/180))
-                    );
+            );
         }
         else if (event.key.keysym.sym == SDLK_DOWN) {
             cameraPosition = cameraPosition * mat3(
                     vec3( 1.0,    0.0,    0.0),
                     vec3( 0.0, cos(-M_PI/180),-sin(-M_PI/180)),
                     vec3( 0.0, sin(-M_PI/180), cos(-M_PI/180))
-                    );
+            );
         }
         else if (event.key.keysym.sym == SDLK_LEFT) {
             cameraPosition = cameraPosition * mat3(
@@ -947,33 +988,30 @@ void switchModes(DrawingWindow &window,SDL_Event event){
     }
 }
 
-void renderFrame(vector<ModelTriangle> &triangles, DrawingWindow &window, float focalLength) {
+void moveLight(float scale, string factor) {
+    for (vec3& light : circleLights) {
+        float* axis = nullptr;
+        if (factor == "x") {
+            axis = &light.x;
+        } else if (factor == "y") {
+            axis = &light.y;
+        } else if (factor == "z") {
+            axis = &light.z;
+        }
+        if (axis != nullptr) {
+            *axis += scale;
+        }
+    }
+}
+
+void renderFrame(vector<ModelTriangle> triangles, DrawingWindow &window, float focalLength) {
     const int frameCount = 96;
     const int n_zero = 5;
-    for (int frame = 0; frame < frameCount; ++frame) {
-        draw(window);
-        renderWireframe(triangles, window, focalLength, 500.0f);
-        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
-        window.savePPM("../output/" + frameNumber + ".ppm");
-        cout << "saved " << frame << endl;
-        float speed = -3.8 * M_PI / 180;
-        cameraPosition = cameraPosition * mat3(
-                vec3(cos(speed), 0.0, sin(speed)),
-                vec3(0.0, 1.0, 0.0),
-                vec3(-sin(speed), 0.0, cos(speed))
-        );
-        cameraOrientation = cameraOrientation * mat3(
-                vec3(cos(speed), 0.0, sin(speed)),
-                vec3(0.0, 1.0, 0.0),
-                vec3(-sin(speed), 0.0, cos(speed))
-        );
-        look_At();
-    }
 //    for (int frame = 0; frame < frameCount; ++frame) {
 //        draw(window);
-//        renderRasterising(triangles, focalLength, window, 500.0f);
+//        renderWireframe(triangles, window, focalLength, 400.0f);
 //        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
-//        window.savePPM("../output2/" + frameNumber + ".ppm");
+//        window.savePPM("../output/" + frameNumber + ".ppm");
 //        cout << "saved " << frame << endl;
 //        float speed = -3.8 * M_PI / 180;
 //        cameraPosition = cameraPosition * mat3(
@@ -988,6 +1026,117 @@ void renderFrame(vector<ModelTriangle> &triangles, DrawingWindow &window, float 
 //        );
 //        look_At();
 //    }
+
+//    for (int frame = 0; frame < frameCount; ++frame) {
+//        draw(window);
+//        renderRasterising(triangles, focalLength, window, 400.0f);
+//        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
+//        window.savePPM("../output3/" + frameNumber + ".ppm");
+//        cout << "saved " << frame << endl;
+//        if(frame < 12) {
+//            cameraPosition.x -= 0.06;
+//        }
+//        else if(frame < 36) {
+//            cameraPosition.x += 0.06;
+//        }
+//        else if(frame < 48) {
+//            cameraPosition.x -= 0.06;
+//        }
+//    }
+
+//    for (int frame = 0; frame < frameCount; ++frame) {
+//        draw(window);
+//        renderRasterising(triangles, focalLength, window, 400.0f);
+//        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
+//        window.savePPM("../output4/" + frameNumber + ".ppm");
+//        cout << "saved " << frame << endl;
+//        if(frame < 12) {
+//            cameraPosition.y -= 0.06;
+//        }
+//        else if(frame < 36) {
+//            cameraPosition.y += 0.06;
+//        }
+//        else if(frame < 48) {
+//            cameraPosition.y -= 0.06;
+//        }
+//    }
+
+//    for (int frame = 0; frame < frameCount; ++frame) {
+//        draw(window);
+//        renderRayTracedScene(triangles, window, focalLength, 300.0f);
+//        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
+//        window.savePPM("../output5/" + frameNumber + ".ppm");
+//        cout << "saved " << frame << endl;
+//        if(frame < 24) {
+//            moveLight(0.03,"x");
+//            moveLight(-0.1,"z");
+//        }
+//        else if(frame < 48) {
+//            moveLight(-0.06,"x");
+//        }
+//        else if(frame < 72) {
+//            moveLight(0.03,"x");
+//            moveLight(0.1,"z");
+//            moveLight(-0.05,"y");
+//        }
+//        else if(frame < 96) {
+//            moveLight(0.05,"y");
+//        }
+//    }
+
+//    for (int frame = 0; frame < frameCount; ++frame) {
+//        draw(window);
+//        renderRayTracedScene(triangles, window, focalLength, 300.0f);
+//        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
+//        window.savePPM("../output6/" + frameNumber + ".ppm");
+//        cout << "saved " << frame << endl;
+//        float temp_c = frame+1;
+//        float temp_c1 = 96-frame;
+//        cameraPosition.z -= 0.55*(1/temp_c1);
+//        cameraPosition.y += 0.10*(1/temp_c);
+//        cameraPosition.x -= 0.08*(1/temp_c);
+//    }
+//    for (int frame = 0; frame < frameCount; ++frame) {
+//        draw(window);
+//        renderRayTracedScene(triangles, window, focalLength, 400.0f);
+//        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
+//        window.savePPM("../output6/" + frameNumber + ".ppm");
+//        cout << "saved " << frame << endl;
+//        float temp_c = 96-frame;
+//        float temp_c1 = frame+1;
+////        cameraPosition.z -= 0.20*(1/temp_c1);
+//        cameraPosition.x += 0.005;
+////        cameraPosition.y -= 0.005;
+////        look_At();
+//    }
+//
+//    for (int frame = 0; frame < frameCount; ++frame) {
+//        draw(window);
+//        renderWireframe(triangles, window, focalLength, 400.0f);
+//        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
+//        window.savePPM("../output7/" + frameNumber + ".ppm");
+//        cout << "saved " << frame << endl;
+//        float temp_c = 96-frame;
+//        float temp_c1 = frame+1;
+//        cameraPosition.z -= 0.10*(1/temp_c1);
+//        cameraPosition.x += 0.30*(1/temp_c);
+//        cameraPosition.z -= 0.10*(1/temp_c1);
+//        look_At();
+//    }
+//
+//    for (int frame = 0; frame < frameCount; ++frame) {
+//        draw(window);
+//        renderWireframe(triangles, window, focalLength, 400.0f);
+//        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
+//        window.savePPM("../output8/" + frameNumber + ".ppm");
+//        cout << "saved " << frame << endl;
+//        float temp_c = 96-frame;
+//        float temp_c1 = frame+1;
+//        cameraPosition.z += 0.40*(1/temp_c1);
+//        cameraPosition.x -= 0.25*(1/temp_c);
+//        cameraPosition.y += 0.05*(1/temp_c);
+//        look_At();
+//    }
 }
 
 int main(int argc, char *argv[]) {
@@ -995,8 +1144,8 @@ int main(int argc, char *argv[]) {
 	SDL_Event event;
 
 //    vector<ModelTriangle> wireFrameTriangle = loadObjFile("../cornell-box.obj",0.35f,loadMtlFile("../cornell-box.mtl"));
-//    vector<ModelTriangle> mirrorTriangle =  loadObjFile("../cornell-box.obj",0.35f,loadMtlFile("../cornell-box.mtl"));
-//    renderFrame(wireFrameTriangle,window,2.0f);
+//    vector<ModelTriangle> mirrorTriangle =  loadObjFile("../rabbit.obj",0.35f,loadMtlFile("../cornell-box.mtl"));
+//    renderFrame(calculateVertexNormals(mirrorTriangle),window,2.0f);
 
 	while (true) {
 		// We MUST poll for events - otherwise the window will freeze !

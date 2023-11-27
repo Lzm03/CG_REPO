@@ -5,6 +5,7 @@
 #include <array>
 #include "Colour.h"
 #include "TexturePoint.h"
+#include "TextureMap.h"
 
 struct ModelTriangle {
 	std::array<glm::vec3, 3> vertices{};
@@ -16,6 +17,8 @@ struct ModelTriangle {
     bool isMirror;
     std::string name;
     bool isGlass;
+//    bool isTexture;
+//    TextureMap texture;
 
 	ModelTriangle();
 	ModelTriangle(const glm::vec3 &v0, const glm::vec3 &v1, const glm::vec3 &v2, Colour trigColour);

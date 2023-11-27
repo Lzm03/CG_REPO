@@ -21,17 +21,304 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e2261876-6068-4371-a982-98716b862b31" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/output6/00001.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00003.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00004.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00005.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00006.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00007.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00009.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00010.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00011.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00012.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00013.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00014.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00015.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00016.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00017.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00019.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00020.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00021.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00022.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00023.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00024.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00025.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00026.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00027.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00028.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00029.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00030.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00031.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00032.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00033.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00034.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00035.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00036.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00037.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00038.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00039.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00040.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00041.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00042.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00043.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00044.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00045.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00046.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00047.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00048.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00049.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00050.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00051.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00052.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00053.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00054.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00055.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00056.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00057.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00058.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00059.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00060.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00061.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00062.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00063.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00064.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00065.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00066.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00067.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00068.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00069.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00070.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00071.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00072.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00073.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00074.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00075.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00076.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00077.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00078.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00079.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00080.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00081.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00082.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00084.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00085.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00086.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00087.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00088.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00089.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00090.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00091.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00092.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00093.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00094.ppm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output6/00095.ppm" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/.ninja_deps" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/.ninja_deps" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/.ninja_log" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/.ninja_log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/RedNoise.dir/libs/sdw/RayTriangleIntersection.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/RedNoise.dir/libs/sdw/RayTriangleIntersection.cpp.o" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/RedNoise.dir/src/RedNoise.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/RedNoise.dir/src/RedNoise.cpp.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/RedNoise" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/RedNoise" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/RedNoise" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cornell-box.mtl" beforeDir="false" afterPath="$PROJECT_DIR$/cornell-box.mtl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cornell-box.obj" beforeDir="false" afterPath="$PROJECT_DIR$/cornell-box.obj" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/libs/sdw/ModelTriangle.h" beforeDir="false" afterPath="$PROJECT_DIR$/libs/sdw/ModelTriangle.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output.mp4" beforeDir="false" afterPath="$PROJECT_DIR$/output.mp4" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00000.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00000.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00001.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00001.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00002.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00002.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00003.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00003.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00004.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00004.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00005.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00005.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00006.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00006.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00007.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00007.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00008.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00008.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00009.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00009.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00010.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00010.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00011.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00011.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00012.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00012.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00013.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00013.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00014.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00014.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00015.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00015.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00016.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00016.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00017.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00017.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00018.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00018.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00019.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00019.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00020.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00020.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00021.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00021.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00022.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00022.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00023.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00023.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00024.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00024.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00025.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00025.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00026.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00026.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00027.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00027.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00028.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00028.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00029.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00029.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00030.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00030.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00031.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00031.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00032.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00032.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00033.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00033.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00034.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00034.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00035.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00035.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00036.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00036.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00037.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00037.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00038.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00038.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00039.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00039.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00040.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00040.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00041.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00041.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00042.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00042.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00043.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00043.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00044.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00044.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00045.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00045.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00046.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00046.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00047.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00047.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00048.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00048.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00049.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00049.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00050.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00050.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00051.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00051.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00052.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00052.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00053.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00053.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00054.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00054.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00055.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00055.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00056.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00056.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00057.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00057.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00058.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00058.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00059.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00059.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00060.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00060.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00061.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00061.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00062.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00062.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00063.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00063.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00064.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00064.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00065.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00065.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00066.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00066.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00067.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00067.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00068.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00068.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00069.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00069.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00070.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00070.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00071.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00071.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00072.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00072.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00073.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00073.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00074.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00074.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00075.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00075.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00076.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00076.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00077.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00077.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00078.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00078.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00079.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00079.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00080.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00080.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00081.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00081.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00082.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00082.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00083.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00083.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00084.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00084.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00085.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00085.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00086.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00086.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00087.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00087.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00088.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00088.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00089.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00089.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00090.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00090.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00091.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00091.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00092.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00092.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00093.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00093.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00094.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00094.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/00095.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output/00095.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2.mp4" beforeDir="false" afterPath="$PROJECT_DIR$/output2.mp4" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00000.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00001.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00002.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00003.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00004.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00005.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00006.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00007.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00008.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00009.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00010.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00011.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00012.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00013.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00014.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00015.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00016.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00017.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00018.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00019.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00020.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output6/00002.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00021.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00022.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00023.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00024.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00025.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00026.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00027.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00028.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00029.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00030.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00031.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00032.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00033.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00034.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00035.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00036.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00037.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00038.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00039.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00040.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00041.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00042.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00043.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00044.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output6/00083.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00045.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00046.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00047.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00048.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00049.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00050.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00051.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output6/00000.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00052.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00053.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00054.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00055.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00056.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00057.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00058.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00059.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00060.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00061.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00062.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00063.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00064.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00065.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00066.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00067.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output6/00018.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00068.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00069.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00070.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00071.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00072.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00073.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00074.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00075.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/output6/00008.ppm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00076.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00077.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00078.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00079.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00080.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00081.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00082.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00083.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00084.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00085.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00086.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00087.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00088.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00089.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00090.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00091.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00092.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00093.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00094.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output2/00095.ppm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rabbit.obj" beforeDir="false" afterPath="$PROJECT_DIR$/rabbit.obj" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/RedNoise.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/RedNoise.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../RedNoise/cmake-build-debug/Testing/Temporary/LastTest.log" beforeDir="false" afterPath="$PROJECT_DIR$/../RedNoise/cmake-build-debug/Testing/Temporary/LastTest.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../RedNoise/cmake-build-debug/output.bmp" beforeDir="false" afterPath="$PROJECT_DIR$/../RedNoise/cmake-build-debug/output.bmp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../RedNoise/cmake-build-debug/output.ppm" beforeDir="false" afterPath="$PROJECT_DIR$/../RedNoise/cmake-build-debug/output.ppm" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../RedNoise/cornell-box.mtl" beforeDir="false" afterPath="$PROJECT_DIR$/../RedNoise/cornell-box.mtl" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../RedNoise/cornell-box.obj" beforeDir="false" afterPath="$PROJECT_DIR$/../RedNoise/cornell-box.obj" afterDir="false" />
     </list>
@@ -116,6 +403,10 @@
       <workItem from="1700790594468" duration="2700000" />
       <workItem from="1700834041535" duration="11875000" />
       <workItem from="1700849047305" duration="26056000" />
+      <workItem from="1700919971856" duration="19120000" />
+      <workItem from="1700955565116" duration="10428000" />
+      <workItem from="1701014301014" duration="2984000" />
+      <workItem from="1701027593936" duration="2780000" />
     </task>
     <servers />
   </component>
