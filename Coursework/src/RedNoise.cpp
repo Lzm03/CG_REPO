@@ -296,8 +296,8 @@ vector<ModelTriangle> calculateVertexNormals(vector<ModelTriangle> triangles) {
             vec3 vertexNormal = vec3(0.0f);
             int count = 0;
             for (auto& otherTriangle : triangles) {
-                for (int ov = 0; ov < 3; ++ov) {
-                    if (triangle.vertices[v] == otherTriangle.vertices[ov]) {
+                for (int vertex = 0; vertex < 3; ++vertex) {
+                    if (triangle.vertices[v] == otherTriangle.vertices[vertex]) {
                         vertexNormal += otherTriangle.normal;
                         count++;
                     }
@@ -939,7 +939,6 @@ void renderFrame(vector<ModelTriangle> triangles, DrawingWindow &window, float f
 //        );
 //        look_At();
 //    }
-
 //    for (int frame = 0; frame < frameCount; ++frame) {
 //        draw(window);
 //        renderRasterising(triangles, focalLength, window, 400.0f);
@@ -973,7 +972,6 @@ void renderFrame(vector<ModelTriangle> triangles, DrawingWindow &window, float f
 //            cameraPosition.y -= 0.06;
 //        }
 //    }
-
 //    for (int frame = 0; frame < frameCount; ++frame) {
 //        draw(window);
 //        renderRasterising(triangles, focalLength, window, 400.0f);
@@ -989,82 +987,6 @@ void renderFrame(vector<ModelTriangle> triangles, DrawingWindow &window, float f
 //        else if(frame < 48) {
 //            cameraPosition.z -= 0.06;
 //        }
-//    }
-//    for (int frame = 0; frame < frameCount; ++frame) {
-////        draw(window);
-//        renderRayTracedScene(triangles, window, focalLength, 300.0f);
-//        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
-//        window.savePPM("../output5/" + frameNumber + ".ppm");
-//        cout << "saved " << frame << endl;
-//        if(frame < 24) {
-//            moveLight(0.03,"x");
-//            moveLight(-0.1,"z");
-//        }
-//        else if(frame < 48) {
-//            moveLight(-0.06,"x");
-//        }
-//        else if(frame < 72) {
-//            moveLight(0.03,"x");
-//            moveLight(0.1,"z");
-//            moveLight(-0.05,"y");
-//        }
-//        else if(frame < 96) {
-//            moveLight(0.05,"y");
-//        }
-//    }
-
-//    for (int frame = 0; frame < frameCount; ++frame) {
-//        draw(window);
-//        renderRayTracedScene(triangles, window, focalLength, 300.0f);
-//        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
-//        window.savePPM("../output6/" + frameNumber + ".ppm");
-//        cout << "saved " << frame << endl;
-//        float temp_c = frame+1;
-//        float temp_c1 = 96-frame;
-//        cameraPosition.z -= 0.55*(1/temp_c1);
-//        cameraPosition.y += 0.10*(1/temp_c);
-//        cameraPosition.x -= 0.08*(1/temp_c);
-//    }
-//    for (int frame = 0; frame < frameCount; ++frame) {
-//        draw(window);
-//        renderRayTracedScene(triangles, window, focalLength, 400.0f);
-//        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
-//        window.savePPM("../output6/" + frameNumber + ".ppm");
-//        cout << "saved " << frame << endl;
-//        float temp_c = 96-frame;
-//        float temp_c1 = frame+1;
-////        cameraPosition.z -= 0.20*(1/temp_c1);
-//        cameraPosition.x += 0.005;
-////        cameraPosition.y -= 0.005;
-////        look_At();
-//    }
-//
-//    for (int frame = 0; frame < frameCount; ++frame) {
-//        draw(window);
-//        renderWireframe(triangles, window, focalLength, 400.0f);
-//        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
-//        window.savePPM("../output7/" + frameNumber + ".ppm");
-//        cout << "saved " << frame << endl;
-//        float temp_c = 96-frame;
-//        float temp_c1 = frame+1;
-//        cameraPosition.z -= 0.10*(1/temp_c1);
-//        cameraPosition.x += 0.30*(1/temp_c);
-//        cameraPosition.z -= 0.10*(1/temp_c1);
-//        look_At();
-//    }
-//
-//    for (int frame = 0; frame < frameCount; ++frame) {
-//        draw(window);
-//        renderWireframe(triangles, window, focalLength, 400.0f);
-//        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
-//        window.savePPM("../output8/" + frameNumber + ".ppm");
-//        cout << "saved " << frame << endl;
-//        float temp_c = 96-frame;
-//        float temp_c1 = frame+1;
-//        cameraPosition.z += 0.40*(1/temp_c1);
-//        cameraPosition.x -= 0.25*(1/temp_c);
-//        cameraPosition.y += 0.05*(1/temp_c);
-//        look_At();
 //    }
 }
 
