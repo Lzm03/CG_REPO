@@ -46,18 +46,18 @@ enum RenderMode {
 };
 RenderMode currentRenderMode = RENDER_NONE;
 
-void draw(DrawingWindow &window) {
-    window.clearPixels();
-    for (size_t y = 0; y < window.height; y++) {
-        for (size_t x = 0; x < window.width; x++) {
-            float red = 0;
-            float green = 0;
-            float blue = 0;
-            uint32_t colour = (255 << 24) + (int(red) << 16) + (int(green) << 8) + int(blue);
-            window.setPixelColour(x, y, colour);
-        }
-    }
-}
+//void draw(DrawingWindow &window) {
+//    window.clearPixels();
+//    for (size_t y = 0; y < window.height; y++) {
+//        for (size_t x = 0; x < window.width; x++) {
+//            float red = 0;
+//            float green = 0;
+//            float blue = 0;
+//            uint32_t colour = (255 << 24) + (int(red) << 16) + (int(green) << 8) + int(blue);
+//            window.setPixelColour(x, y, colour);
+//        }
+//    }
+//}
 
 void drawline(CanvasPoint& from, CanvasPoint& to, Colour colour, DrawingWindow &window){
     float xDiff = to.x - from.x;
@@ -322,7 +322,7 @@ Colour calculateLightingAtVertex(RayTriangleIntersection r, vec3 normal, float s
 
     vec3 lightDirection = normalize(sphereLight - r.intersectionPoint);
     float distance = length(lightDirection);
-    float Intensity = 10 / (4 * M_PI * (pow(distance, 2)));
+    float Intensity = 40 / (4 * M_PI * (pow(distance, 2)));
     float proximityLight = std::max(0.0f, std::min(1.0f, Intensity));
 
     float diffuseLight = std::max(dot(normal, lightDirection), 0.0f);
@@ -365,55 +365,35 @@ vec3 getBarycentricCoordinates(vec3 point, ModelTriangle triangle) {
     return vec3(u, v, w);
 }
 
-// hard shadow
-//bool is_shadow(RayTriangleIntersection intersection, vector<ModelTriangle> &triangles,vec3 &light) {
-//    vec3 shadow_rayDirection = light - intersection.intersectionPoint;
-//    for(int i = 0; i < triangles.size(); i++) {
-//        ModelTriangle triangle = triangles[i];
-//        vec3 e0 = triangle.vertices[1] - triangle.vertices[0];
-//        vec3 e1 = triangle.vertices[2] - triangle.vertices[0];
-//        vec3 SPVector = intersection.intersectionPoint - triangle.vertices[0];
-//        mat3 DEMatrix(-normalize(shadow_rayDirection), e0, e1);
-//        vec3 possibleSolution = inverse(DEMatrix) * SPVector;
-//        float t = possibleSolution.x, u = possibleSolution.y, v = possibleSolution.z;
-//
-//        if((u >= 0.0) && (u <= 1.0) && (v >= 0.0) && (v <= 1.0) && (u + v) <= 1.0) {
-//            if(t < length(shadow_rayDirection) && t > 0.01 && i != intersection.triangleIndex) {
-//                return true;
-//            }
-//        }
-//    }
-//    return false;
-//}
-
 // soft shadow
 float is_shadow(RayTriangleIntersection intersection, vector<ModelTriangle> &triangles, vec3 &light) {
     vec3 shadow_rayDirection = light - intersection.intersectionPoint;
+    float shadow_rayLength = length(shadow_rayDirection);
+    shadow_rayDirection = normalize(shadow_rayDirection);
     float closestDistance = std::numeric_limits<float>::max();
 
-    for (int i = 0; i < triangles.size(); i++) {
-        ModelTriangle triangle = triangles[i];
+    for (ModelTriangle &triangle : triangles) {
         vec3 e0 = triangle.vertices[1] - triangle.vertices[0];
         vec3 e1 = triangle.vertices[2] - triangle.vertices[0];
         vec3 SPVector = intersection.intersectionPoint - triangle.vertices[0];
-        mat3 DEMatrix(-normalize(shadow_rayDirection), e0, e1);
+        mat3 DEMatrix(-shadow_rayDirection, e0, e1);
         vec3 possibleSolution = inverse(DEMatrix) * SPVector;
         float t = possibleSolution.x, u = possibleSolution.y, v = possibleSolution.z;
         if ((u >= 0.0) && (u <= 1.0) && (v >= 0.0) && (v <= 1.0) && (u + v) <= 1.0) {
-            if (t < length(shadow_rayDirection) && t > 0.01 && i != intersection.triangleIndex) {
+            if (t < shadow_rayLength && t > 0.01 && &triangle != &triangles[intersection.triangleIndex]) {
                 closestDistance = std::min(closestDistance, t);
             }
         }
     }
     if (closestDistance < std::numeric_limits<float>::max()) {
-        return std::max(0.8f, 0.9f - closestDistance / length(shadow_rayDirection));
+        return std::max(0.8f, 0.9f - closestDistance / shadow_rayLength);
     }
     return 0.0f;
 }
 
 vector<vec3> getcircleLights() {
-    int numLights = 1;
-    float radius = 0.12f;
+    int numLights = 15;
+    float radius = 0.05f;
     for (int i = 0; i < numLights; ++i) {
         float angle = 2 * M_PI * i / numLights;
         float x = radius * cos(angle);
@@ -423,77 +403,88 @@ vector<vec3> getcircleLights() {
     return circleLights;
 }
 
-void renderFlatSphere(vector<ModelTriangle> triangles, DrawingWindow &window, float focalLength, float scaling_factor) {
-    vector<vec3> lights = getcircleLights();
+Colour calculatePixelLighting( RayTriangleIntersection& r, vec3 normal, int shininess) {
+    Colour finalColour = {0, 0, 0};
+    for (auto light : circleLights) {
+        Colour colour = calculateLightingAtVertex(r, normal, shininess, light);
+        finalColour.red += colour.red;
+        finalColour.green += colour.green;
+        finalColour.blue += colour.blue;
+    }
+    finalColour.red /= circleLights.size();
+    finalColour.green /= circleLights.size();
+    finalColour.blue /= circleLights.size();
+    return finalColour;
+}
+
+Colour Flat(RayTriangleIntersection& r, vec3& rayDirection, vector<ModelTriangle>& triangles, vector<vec3>& lights) {
+    r.intersectedTriangle.normal = calculateFaceNormal(r.intersectedTriangle);
+    return calculatePixelLighting(r, r.intersectedTriangle.normal, 64.0f);
+}
+
+Colour Gouraud(RayTriangleIntersection& r, vec3& rayDirection, vector<ModelTriangle>& triangles, vector<vec3>& lights) {
+    r.intersectedTriangle.vertexColours.resize(3);
+    for (int v = 0; v < 3; ++v) {
+        r.intersectedTriangle.vertexColours[v] = calculatePixelLighting(r, r.intersectedTriangle.vertexNormals[v], 64);
+    }
+
+    vec3 barycentric = getBarycentricCoordinates(r.intersectionPoint, r.intersectedTriangle);
+    Colour colour;
+    colour.red = barycentric.x * r.intersectedTriangle.vertexColours[0].red + barycentric.y * r.intersectedTriangle.vertexColours[1].red + barycentric.z * r.intersectedTriangle.vertexColours[2].red;
+    colour.green = barycentric.x * r.intersectedTriangle.vertexColours[0].green + barycentric.y * r.intersectedTriangle.vertexColours[1].green + barycentric.z * r.intersectedTriangle.vertexColours[2].green;
+    colour.blue = barycentric.x * r.intersectedTriangle.vertexColours[0].blue + barycentric.y * r.intersectedTriangle.vertexColours[1].blue + barycentric.z * r.intersectedTriangle.vertexColours[2].blue;
+
+    return colour;
+}
+
+Colour Phong(RayTriangleIntersection& r, vec3& rayDirection,vector<ModelTriangle>& triangles,vector<vec3>& lights) {
+    vec3 barycentric = getBarycentricCoordinates(r.intersectionPoint, r.intersectedTriangle);
+    vec3 interpolatedNormal =
+            barycentric.x * r.intersectedTriangle.vertexNormals[0] +
+            barycentric.y * r.intersectedTriangle.vertexNormals[1] +
+            barycentric.z * r.intersectedTriangle.vertexNormals[2];
+    interpolatedNormal = normalize(interpolatedNormal);
+    return calculatePixelLighting(r, interpolatedNormal, 64.0f);
+}
+
+Colour Box(RayTriangleIntersection& r, vec3& rayDirection, vector<ModelTriangle>& triangles, vector<vec3>& lights) {
+    if (!isinf(r.distanceFromCamera)) {
+        return processRayIntersection(r, rayDirection, triangles, lights, 1);
+    } else {
+        return {0, 0, 0};
+    }
+}
+
+void renderScene(DrawingWindow &window, float focalLength, float scaling_factor, vector<ModelTriangle>& triangles, function<Colour(RayTriangleIntersection&, vec3&, vector<ModelTriangle>&, vector<vec3>&)> Types) {
+    vector<vec3> rayDirections(window.width * window.height);
+
     for (int y = 0; y < window.height; y++) {
         for (int x = 0; x < window.width; x++) {
-            vec3 rayDirection = getRayDirectionFromCanvas(x,y,window.width,window.height,focalLength,scaling_factor);
-            RayTriangleIntersection r = getClosestValidIntersection(triangles,cameraPosition,rayDirection,1);
+            rayDirections[y * window.width + x] = getRayDirectionFromCanvas(x, y, window.width, window.height, focalLength, scaling_factor);
+        }
+    }
+
+    for (int y = 0; y < window.height; y++) {
+        for (int x = 0; x < window.width; x++) {
+            vec3& rayDirection = rayDirections[y * window.width + x];
+            RayTriangleIntersection r = getClosestValidIntersection(triangles, cameraPosition, rayDirection, 1);
             if (!isinf(r.distanceFromCamera)) {
-                r.intersectedTriangle.normal = calculateFaceNormal(r.intersectedTriangle);
-                for (int i = 0; i < lights.size(); ++i) {
-                    Colour colour = calculateLighting(r,lights[i]);
-                    uint32_t ray_Color = (255 << 24) + (int(colour.red) << 16) + (int(colour.green) << 8) + int(colour.blue);
-                    window.setPixelColour(x, y, ray_Color);
-                }
+                Colour pixelColour = Types(r, rayDirection, triangles, circleLights);
+                uint32_t finalColor = (255 << 24) + (int(pixelColour.red) << 16) + (int(pixelColour.green) << 8) + int(pixelColour.blue);
+                window.setPixelColour(x, y, finalColor);
             }
         }
     }
 }
 
-void gouraud(vector<ModelTriangle> triangles, DrawingWindow &window, float focalLength, float scaling_factor) {
-    for (int y = 0; y < window.height; y++) {
-        for (int x = 0; x < window.width; x++) {
-            vec3 rayDirection = getRayDirectionFromCanvas(x, y, window.width, window.height, focalLength, scaling_factor);
-            RayTriangleIntersection r = getClosestValidIntersection(triangles,cameraPosition,rayDirection,1);
-                r.intersectedTriangle.vertexColours.resize(r.intersectedTriangle.vertices.size());
-                for (int v = 0; v < r.intersectedTriangle.vertices.size(); ++v) {
-                    r.intersectedTriangle.vertexColours[v] = calculateLightingAtVertex(r,r.intersectedTriangle.vertexNormals[v],64.0f,SphereLight);
-                }
-            if (!isinf(r.distanceFromCamera)) {
-                vec3 barycentric = getBarycentricCoordinates(r.intersectionPoint, r.intersectedTriangle);
-                Colour colour;
-                colour.red = barycentric.x * r.intersectedTriangle.vertexColours[0].red + barycentric.y * r.intersectedTriangle.vertexColours[1].red + barycentric.z * r.intersectedTriangle.vertexColours[2].red;
-                colour.green = barycentric.x * r.intersectedTriangle.vertexColours[0].green + barycentric.y * r.intersectedTriangle.vertexColours[1].green + barycentric.z * r.intersectedTriangle.vertexColours[2].green;
-                colour.blue = barycentric.x * r.intersectedTriangle.vertexColours[0].blue + barycentric.y * r.intersectedTriangle.vertexColours[1].blue + barycentric.z * r.intersectedTriangle.vertexColours[2].blue;
 
-                uint32_t sphere_Color = (255 << 24) + (int(colour.red) << 16) + (int(colour.green) << 8) + int(colour.blue);
-                window.setPixelColour(x, y, sphere_Color);
-            }
-        }
-    }
-}
-
-void phong(vector<ModelTriangle> triangles, DrawingWindow &window, float focalLength, float scaling_factor) {
-    vector<vec3> lights = getcircleLights();
-    for (int y = 0; y < window.height; y++) {
-        for (int x = 0; x < window.width; x++) {
-            vec3 rayDirection = getRayDirectionFromCanvas(x, y, window.width, window.height, focalLength, scaling_factor);
-            RayTriangleIntersection r = getClosestValidIntersection(triangles,cameraPosition,rayDirection,1);
-            if (!isinf(r.distanceFromCamera)) {
-                vec3 barycentric = getBarycentricCoordinates(r.intersectionPoint, r.intersectedTriangle);
-                vec3 interpolatedNormal =
-                        barycentric.x * r.intersectedTriangle.vertexNormals[0] +
-                        barycentric.y * r.intersectedTriangle.vertexNormals[1] +
-                        barycentric.z * r.intersectedTriangle.vertexNormals[2];
-                interpolatedNormal = normalize(interpolatedNormal);
-                for (int i = 0; i < lights.size(); ++i) {
-                    Colour colour = calculateLightingAtVertex(r, interpolatedNormal, 64.0f, lights[i]);
-                    uint32_t finalColor = (255 << 24) + (int(colour.red) << 16) + (int(colour.green) << 8) + int(colour.blue);
-                    window.setPixelColour(x, y, finalColor);
-                }
-            }
-        }
-    }
-}
-
-float calculateFresnelEffect(const vec3 &I, const vec3 &N, float refractiveIndex) {
+float calculateFresnelEffect(vec3 &I, vec3 &N, float refractiveIndex) {
     float cosTheta = -dot(normalize(I), normalize(N));
     float R0 = pow((1.0f - refractiveIndex) / (1.0f + refractiveIndex), 2);
     return R0 + (1 - R0) * pow(1 - cosTheta, 5);
 }
 
-Colour mixColours(const Colour &reflectionColour, const Colour &refractionColour, float fresnelEffect) {
+Colour mixColours(Colour &reflectionColour, Colour &refractionColour, float fresnelEffect) {
     Colour mixedColour;
     mixedColour.red = reflectionColour.red * fresnelEffect + refractionColour.red * (1 - fresnelEffect);
     mixedColour.green = reflectionColour.green * fresnelEffect + refractionColour.green * (1 - fresnelEffect);
@@ -505,7 +496,7 @@ Colour mixColours(const Colour &reflectionColour, const Colour &refractionColour
     return mixedColour;
 }
 
-Colour handleMirrorReflection(const RayTriangleIntersection r, const vec3 reflectionDirection, vector<ModelTriangle> triangles, vector<vec3> Mult_lights, int depth) {
+Colour handleMirrorReflection(RayTriangleIntersection r, vec3 reflectionDirection, vector<ModelTriangle> triangles, vector<vec3> Mult_lights, int depth) {
     vec3 offset = 0.001f * r.intersectedTriangle.normal;
     RayTriangleIntersection reflectionIntersection = getClosestValidIntersection(triangles,
                                                                                  r.intersectionPoint + offset, reflectionDirection,
@@ -516,7 +507,7 @@ Colour handleMirrorReflection(const RayTriangleIntersection r, const vec3 reflec
     return {0, 0, 0};
 }
 
-Colour handleGlass(const RayTriangleIntersection& r, const vec3& rayDirection, const vec3& normal, vector<ModelTriangle> &triangles, vector<vec3> &Mult_lights, int depth) {
+Colour handleGlass(RayTriangleIntersection& r, vec3& rayDirection, vec3& normal, vector<ModelTriangle> &triangles, vector<vec3> &Mult_lights, int depth) {
     vec3 refractedDirection = refract(rayDirection, normal, 1.0f);
     if (!isnan(refractedDirection.x)) {
         vec3 refractedRayOrigin = r.intersectionPoint + refractedDirection * 0.001f;
@@ -538,7 +529,7 @@ Colour handleGlass(const RayTriangleIntersection& r, const vec3& rayDirection, c
     return r.intersectedTriangle.colour;
 }
 
-Colour handleDiffuse(const RayTriangleIntersection& r, vector<ModelTriangle> triangles, vector<vec3> &Mult_lights) {
+Colour handleDiffuse(RayTriangleIntersection r, vector<ModelTriangle> triangles, vector<vec3> &Mult_lights) {
     Colour accumulatedColour = {0, 0, 0};
     for (int l = 0; l < Mult_lights.size(); ++l) {
         float shadowIntensity = is_shadow(r, triangles, Mult_lights[l]);
@@ -558,44 +549,12 @@ Colour handleDiffuse(const RayTriangleIntersection& r, vector<ModelTriangle> tri
     return accumulatedColour;
 }
 
-vec2 getTextureCoordinates(RayTriangleIntersection intersection) {
-    vec3 barycentric = getBarycentricCoordinates(intersection.intersectionPoint, intersection.intersectedTriangle);
-    TexturePoint uv0 = intersection.intersectedTriangle.texturePoints[0];
-    TexturePoint uv1 = intersection.intersectedTriangle.texturePoints[1];
-    TexturePoint uv2 = intersection.intersectedTriangle.texturePoints[2];
-
-    float u = uv0.x * barycentric.x + uv1.x * barycentric.y + uv2.x * barycentric.z;
-    float v = uv0.y * barycentric.x + uv1.y * barycentric.y + uv2.y * barycentric.z;
-
-    return vec2(u, v);
-}
-
-uint32_t get_texture(RayTriangleIntersection r, TextureMap texture) {
-    ModelTriangle t = r.intersectedTriangle;
-
-    float x = ((1 - r.u - r.v) * t.texturePoints[0].x + r.u * t.texturePoints[1].x + r.v * t.texturePoints[2].x);
-    float y = ((1 - r.u - r.v) * t.texturePoints[0].y + r.u * t.texturePoints[1].y + r.v * t.texturePoints[2].y);
-
-    x *= texture.width;
-    y *= texture.height;
-
-    return texture.pixels[round(y)*texture.width + round(x)];
-}
-
-Colour mixColours(const Colour& colour1, const Colour& colour2) {
-    int red = (colour1.red + colour2.red) / 2;
-    int green = (colour1.green + colour2.green) / 2;
-    int blue = (colour1.blue + colour2.blue) / 2;
-
-    return Colour(red, green, blue);
-}
-
 Colour processRayIntersection(RayTriangleIntersection r, vec3 rayDirection, vector<ModelTriangle> triangles, vector<vec3> Mult_lights, int depth) {
     Colour accumulatedColour = {0, 0, 0};
-    if (depth >= 10) {
+    if (depth >= 6) {
         return accumulatedColour;
     }
-    vec3 normal = normalize(r.intersectedTriangle.normal);
+    vec3 normal = calculateFaceNormal(r.intersectedTriangle);
     if (r.intersectedTriangle.isMirror) {
         vec3 reflectionDirection = reflect(rayDirection, normal);
         accumulatedColour = handleMirrorReflection(r, reflectionDirection, triangles, Mult_lights, depth);
@@ -608,16 +567,6 @@ Colour processRayIntersection(RayTriangleIntersection r, vec3 rayDirection, vect
     }
     else {
         accumulatedColour = handleDiffuse(r, triangles,Mult_lights);
-//        if (!r.intersectedTriangle.colour.name.empty()) {
-//            vec2 textureCoordinates = getTextureCoordinates(r);
-//            uint32_t t = get_texture(r,"../"+ r.intersectedTriangle.colour.name);
-//            float r = (t >> 16) & 0xff;
-//            float g = (t >>  8) & 0xff;
-//            float b = t & 0xff;
-//            Colour textureColour = Colour(int(r), int(g), int(b));
-//
-//            accumulatedColour = mixColours(accumulatedColour, textureColour);
-//        }
     }
     return accumulatedColour;
 }
@@ -641,39 +590,20 @@ void renderRayTracedScene(vector<ModelTriangle> triangles, DrawingWindow &window
             otherTriangles.push_back(triangle);
         }
     }
+
     if (!otherTriangles.empty()) {
-        for (int y = 0; y < window.height; y++) {
-            for (int x = 0; x < window.width; x++) {
-                vec3 rayDirection = getRayDirectionFromCanvas(x, y, window.width, window.height, focalLength,
-                                                              scaling_factor);
-                RayTriangleIntersection r = getClosestValidIntersection(otherTriangles, cameraPosition, rayDirection,
-                                                                        0);
-                if (!isinf(r.distanceFromCamera)) {
-                    r.intersectedTriangle.normal = calculateFaceNormal(r.intersectedTriangle);
-                    Colour pixelColour = processRayIntersection(r, rayDirection, triangles, Mult_lights, 1);
-                    uint32_t ray_Color = (255 << 24) + (int(pixelColour.red) << 16) + (int(pixelColour.green) << 8) + int(pixelColour.blue);
-                    window.setPixelColour(x, y, ray_Color);
-                } else {
-                    Colour backgroundColor = {0, 0, 0};
-                    uint32_t BackgroundColor =
-                            (255 << 24) + (backgroundColor.red << 16) + (backgroundColor.green << 8) +
-                            backgroundColor.blue;
-                    window.setPixelColour(x, y, BackgroundColor);
-                }
-            }
-        }
+        renderScene(window, focalLength, scaling_factor, triangles, Box);
     }
     if(!sphereTriangles.empty()) {
-        renderFlatSphere(sphereTriangles, window, focalLength, scaling_factor);
+        renderScene(window, focalLength, scaling_factor, sphereTriangles, Flat);
     }
     if(!sphereTriangles2.empty()){
-        phong(sphereTriangles2, window, focalLength, scaling_factor);
+        renderScene(window, focalLength, scaling_factor, sphereTriangles2, Phong);
     }
     if(!sphereTriangles3.empty()){
-        gouraud(sphereTriangles3,window,focalLength,scaling_factor);
+        renderScene(window, focalLength, scaling_factor, sphereTriangles3, Gouraud);
     }
 }
-
 
 void handleEvent(SDL_Event event, DrawingWindow &window) {
     if (event.type == SDL_KEYDOWN) {
@@ -721,7 +651,7 @@ void ResetCamera() {
             vec3(0.0,0.0,1.0));
 }
 
-vector<ModelTriangle> loadObjFile(const std::string& filename, float scalingFactor, unordered_map<string,Colour> colours) {
+vector<ModelTriangle> loadObjFile(std::string filename, float scalingFactor, unordered_map<string,Colour> colours) {
     ifstream file(filename);
     vector<ModelTriangle> triangles;
     vector<vec3> vertices;
@@ -811,7 +741,7 @@ vector<ModelTriangle> loadObjFile(const std::string& filename, float scalingFact
     return triangles;
 }
 
-unordered_map<string,Colour> loadMtlFile(const std::string& filename) {
+unordered_map<string,Colour> loadMtlFile(std::string filename) {
     ifstream file(filename);
     string line;
     string material;
@@ -971,15 +901,14 @@ void switchModes(DrawingWindow &window,SDL_Event event){
         case RENDER_RayTRACED:
             renderRayTracedScene(calculateVertexNormals(mirrorTriangle),window,focalLength,180.0f);
             break;
-        case RENDER_FlatSphere:
-            renderFlatSphere(sphere,window,focalLength,300.0f);
-            break;
-        case RENDER_GOURAUD:
-            gouraud(calculateVertexNormals(sphere),window,focalLength,300.0f);
-            break;
-        case RENDER_PHONG:
-            phong(calculateVertexNormals(sphere),window,focalLength,300.0f);
-            break;
+//        case RENDER_FlatSphere:
+//            renderFlatSphere(sphere,window,focalLength,300.0f);
+//        case RENDER_GOURAUD:
+//            gouraud(calculateVertexNormals(sphere),window,focalLength,300.0f);
+//            break;
+//        case RENDER_PHONG:
+//            phong(calculateVertexNormals(sphere),window,focalLength,300.0f);
+//            break;
         case RENDER_LOGO:
             renderTexture(logoTriangle,focalLength,window,2.0f);
             break;
@@ -988,25 +917,9 @@ void switchModes(DrawingWindow &window,SDL_Event event){
     }
 }
 
-void moveLight(float scale, string factor) {
-    for (vec3& light : circleLights) {
-        float* axis = nullptr;
-        if (factor == "x") {
-            axis = &light.x;
-        } else if (factor == "y") {
-            axis = &light.y;
-        } else if (factor == "z") {
-            axis = &light.z;
-        }
-        if (axis != nullptr) {
-            *axis += scale;
-        }
-    }
-}
-
 void renderFrame(vector<ModelTriangle> triangles, DrawingWindow &window, float focalLength) {
-    const int frameCount = 96;
-    const int n_zero = 5;
+    int frameCount = 96;
+    int n_zero = 5;
 //    for (int frame = 0; frame < frameCount; ++frame) {
 //        draw(window);
 //        renderWireframe(triangles, window, focalLength, 400.0f);
@@ -1063,6 +976,22 @@ void renderFrame(vector<ModelTriangle> triangles, DrawingWindow &window, float f
 
 //    for (int frame = 0; frame < frameCount; ++frame) {
 //        draw(window);
+//        renderRasterising(triangles, focalLength, window, 400.0f);
+//        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
+//        window.savePPM("../output2/" + frameNumber + ".ppm");
+//        cout << "saved " << frame << endl;
+//        if(frame < 12) {
+//            cameraPosition.z -= 0.06;
+//        }
+//        else if(frame < 36) {
+//            cameraPosition.z += 0.06;
+//        }
+//        else if(frame < 48) {
+//            cameraPosition.z -= 0.06;
+//        }
+//    }
+//    for (int frame = 0; frame < frameCount; ++frame) {
+////        draw(window);
 //        renderRayTracedScene(triangles, window, focalLength, 300.0f);
 //        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
 //        window.savePPM("../output5/" + frameNumber + ".ppm");
@@ -1143,9 +1072,10 @@ int main(int argc, char *argv[]) {
 	DrawingWindow window = DrawingWindow(WIDTH, HEIGHT, false);
 	SDL_Event event;
 
-//    vector<ModelTriangle> wireFrameTriangle = loadObjFile("../cornell-box.obj",0.35f,loadMtlFile("../cornell-box.mtl"));
+//    vector<ModelTriangle> wireFrameTriangle = loadObjFile("../textured-cornell-box.obj",0.35f,loadMtlFile("../cornell-box.mtl"));
 //    vector<ModelTriangle> mirrorTriangle =  loadObjFile("../rabbit.obj",0.35f,loadMtlFile("../cornell-box.mtl"));
 //    renderFrame(calculateVertexNormals(mirrorTriangle),window,2.0f);
+//    renderFrame(wireFrameTriangle,window,2.0f);
 
 	while (true) {
 		// We MUST poll for events - otherwise the window will freeze !
