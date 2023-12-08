@@ -780,12 +780,12 @@ void switchModes(DrawingWindow &window,SDL_Event event){
     float translationAmount = 0.1f;
     float scalingFactor = 0.35f;
     float focalLength = 2.0f;
-    vector<ModelTriangle> wireFrameTriangle = loadObjFile("cornell-box.obj",scalingFactor,loadMtlFile("cornell-box.mtl"));
-    vector<ModelTriangle> filledTriangle = loadObjFile("cornell-box.obj",scalingFactor,loadMtlFile("cornell-box.mtl"));
-    vector<ModelTriangle> mirrorTriangle =  loadObjFile("cornell-box3.obj",scalingFactor,loadMtlFile("cornell-box.mtl"));
-    vector<ModelTriangle> sphere = loadObjFile("Sphere.obj",scalingFactor,loadMtlFile("cornell-box.mtl"));
-    vector<ModelTriangle> textureTriangle = loadObjFile("textured-cornell-box.obj",scalingFactor,loadMtlFile("textured-cornell-box.mtl"));
-    vector<ModelTriangle> logoTriangle = loadObjFile("logo.obj", scalingFactor,loadMtlFile("materials.mtl"));
+    vector<ModelTriangle> wireFrameTriangle = loadObjFile("../cornell-box.obj",scalingFactor,loadMtlFile("../cornell-box.mtl"));
+    vector<ModelTriangle> filledTriangle = loadObjFile("../cornell-box.obj",scalingFactor,loadMtlFile("../cornell-box.mtl"));
+    vector<ModelTriangle> mirrorTriangle =  loadObjFile("../cornell-box3.obj",scalingFactor,loadMtlFile("../cornell-box.mtl"));
+    vector<ModelTriangle> sphere = loadObjFile("../Sphere.obj",scalingFactor,loadMtlFile("../cornell-box.mtl"));
+    vector<ModelTriangle> textureTriangle = loadObjFile("../textured-cornell-box.obj",scalingFactor,loadMtlFile("../textured-cornell-box.mtl"));
+    vector<ModelTriangle> logoTriangle = loadObjFile("../logo.obj", scalingFactor,loadMtlFile("../materials.mtl"));
 
     if (event.type == SDL_KEYDOWN) {
         // Camera translation
@@ -932,7 +932,6 @@ void renderFrame(DrawingWindow &window, float focalLength) {
     int frameCount = 96;
     int n_zero = 5;
     vec3 finalCameraPosition;
-
 //    vector<ModelTriangle> mirrorTriangle2 =  loadObjFile("cornell-box.obj",0.35f,loadMtlFile("cornell-box.mtl"));
 
 //    for (int frame = 0; frame < frameCount; ++frame) {
@@ -1074,21 +1073,29 @@ int main(int argc, char *argv[]) {
 	SDL_Event event;
 
 //    vector<ModelTriangle> wireFrameTriangle = loadObjFile("cornell-box.obj",0.35f,loadMtlFile("cornell-box.mtl"));
-
 //    vector<ModelTriangle> mirrorTriangle3 =  loadObjFile("cornell-box3.obj",0.35f,loadMtlFile("cornell-box.mtl"));
 //    vector<ModelTriangle> mirrorTriangle2 =  loadObjFile("cornell-box2.obj",0.35f,loadMtlFile("cornell-box.mtl"));
 //    renderFrame(window,2.0f);
 //    renderFrame(wireFrameTriangle,window,2.0f);
 
 	while (true) {
+        // Reastering triangle
+//        vector<ModelTriangle> rasterising=  loadObjFile("cornell-box.obj",0.35f,loadMtlFile("cornell-box.mtl"));
+//        renderRasterising(rasterising,2.0f,window,400.0f);
 
-        //
-        vector<ModelTriangle> box =  loadObjFile("cornell-box3.obj",0.35f,loadMtlFile("cornell-box.mtl"));
-        renderRayTracedScene(box,window,2.0f,200.0f);
-		if (window.pollForInputEvents(event)) handleEvent(event, window);
-//        switchModes(window,event);
-//        orbit();
-//		draw(window);
+//        // texture map
+//        vector<ModelTriangle> textureTriangle = loadObjFile("textured-cornell-box.obj",0.35f,loadMtlFile("textured-cornell-box.mtl"));
+//        renderRasterising(textureTriangle,2.0f,window,350.0f);
+//
+//        // wireframe triangle
+//        vector<ModelTriangle> wireFrameTriangle = loadObjFile("cornell-box.obj",0.35f,loadMtlFile("cornell-box.mtl"));
+//        renderWireframe(wireFrameTriangle,window,2.0f,400.0f);
+
+        if (window.pollForInputEvents(event)) handleEvent(event, window);
+        // key control
+//         switchModes(window,event);
+//         orbit();
+
 		window.renderFrame();
 	}
 }

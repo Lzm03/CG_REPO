@@ -189,7 +189,7 @@
 			},
 			{
 				"backtrace" : 3,
-				"fragment" : "-Wl,-lasan",
+				"fragment" : "-Wl",
 				"role" : "libraries"
 			},
 			{
