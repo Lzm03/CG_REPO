@@ -42,7 +42,7 @@ if (MSVC)
             PUBLIC
             /W3
             /Zc:wchar_t
-            )
+    )
     set(DEBUG_OPTIONS /MTd)
     set(RELEASE_OPTIONS /MT /GF /Gy /O2 /fp:fast)
     if (NOT DEFINED SDL2_LIBRARIES)
@@ -50,19 +50,19 @@ if (MSVC)
     endif()
 else ()
     target_compile_options(RedNoise
-        PUBLIC
-        -Wall
-        -Wextra
-        -Wcast-align
-        -Wfatal-errors
-        -Werror=return-type
-        -Wno-unused-parameter
-        -Wno-unused-variable
-        -Wno-ignored-attributes)
+            PUBLIC
+            -Wall
+            -Wextra
+            -Wcast-align
+            -Wfatal-errors
+            -Werror=return-type
+            -Wno-unused-parameter
+            -Wno-unused-variable
+            -Wno-ignored-attributes)
 
     set(DEBUG_OPTIONS -O2 -fno-omit-frame-pointer -g)
     set(RELEASE_OPTIONS -O3 -march=native -mtune=native)
-    target_link_libraries(RedNoise PUBLIC $<$<CONFIG:Debug>:-Wl>)
+    target_link_libraries(RedNoise PUBLIC $<$<CONFIG:Debug>:-Wl,-lasan>)
 
 endif()
 
@@ -70,5 +70,5 @@ endif()
 target_compile_options(RedNoise PUBLIC "$<$<CONFIG:RelWithDebInfo>:${RELEASE_OPTIONS}>")
 target_compile_options(RedNoise PUBLIC "$<$<CONFIG:Release>:${RELEASE_OPTIONS}>")
 target_compile_options(RedNoise PUBLIC "$<$<CONFIG:Debug>:${DEBUG_OPTIONS}>")
- 
+
 target_link_libraries(RedNoise PRIVATE ${SDL2_LIBRARIES})

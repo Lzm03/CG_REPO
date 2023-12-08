@@ -1,4 +1,3 @@
-#include <CanvasTriangle.h>
 #include <DrawingWindow.h>
 #include <Utils.h>
 #include <fstream>
@@ -11,13 +10,15 @@
 #include "TexturePoint.h"
 #include <unordered_map>
 #include <glm/glm.hpp>
+#include "algorithm"
+
 
 
 using namespace std;
 using namespace glm;
 
-#define WIDTH 320 * 4
-#define HEIGHT 240 * 4
+#define WIDTH 320 * 3
+#define HEIGHT 240 * 3
 
 bool orbiting = false;
 float refractiveIndexRatio = 1.5f;
@@ -29,6 +30,9 @@ mat3 cameraOrientation(
 vec3 cameraPosition(0.0f, 0.0f, 4.0f);
 vec3 SphereLight(0.0f,1.5f, 3.5f);
 vec3 BoxLight(0.0,0.5,0.2);
+//vector<vec3> circleLights{
+//    vec3(0.0,0.5,0.2)
+//};
 vector<vec3> circleLights;
 
 Colour processRayIntersection(RayTriangleIntersection r, vec3 rayDirection, vector<ModelTriangle> triangles, vector<vec3> Mult_lights, int depth);
@@ -46,18 +50,18 @@ enum RenderMode {
 };
 RenderMode currentRenderMode = RENDER_NONE;
 
-//void draw(DrawingWindow &window) {
-//    window.clearPixels();
-//    for (size_t y = 0; y < window.height; y++) {
-//        for (size_t x = 0; x < window.width; x++) {
-//            float red = 0;
-//            float green = 0;
-//            float blue = 0;
-//            uint32_t colour = (255 << 24) + (int(red) << 16) + (int(green) << 8) + int(blue);
-//            window.setPixelColour(x, y, colour);
-//        }
-//    }
-//}
+void draw(DrawingWindow &window) {
+    window.clearPixels();
+    for (size_t y = 0; y < window.height; y++) {
+        for (size_t x = 0; x < window.width; x++) {
+            float red = 0;
+            float green = 0;
+            float blue = 0;
+            uint32_t colour = (255 << 24) + (int(red) << 16) + (int(green) << 8) + int(blue);
+            window.setPixelColour(x, y, colour);
+        }
+    }
+}
 
 void drawline(CanvasPoint& from, CanvasPoint& to, Colour colour, DrawingWindow &window){
     float xDiff = to.x - from.x;
@@ -101,6 +105,39 @@ void renderWireframe(vector<ModelTriangle> triangles, DrawingWindow &window,floa
     }
 }
 
+void rasterCalculate(ModelTriangle triangle, Colour input_colour, DrawingWindow &window, vector<vector<float>>& depthBuffer) {
+    if (triangle.vertices[0].y > triangle.vertices[1].y) swap(triangle.vertices[0], triangle.vertices[1]);
+    if (triangle.vertices[0].y > triangle.vertices[2].y) swap(triangle.vertices[0], triangle.vertices[2]);
+    if (triangle.vertices[1].y > triangle.vertices[2].y) swap(triangle.vertices[1], triangle.vertices[2]);
+
+    vec3 top = vec3(triangle.vertices[0].x,triangle.vertices[0].y,triangle.vertices[0].z);
+    vec3 middle = vec3(triangle.vertices[1].x,triangle.vertices[1].y,triangle.vertices[1].z);
+    vec3 bottom = vec3(triangle.vertices[2].x,triangle.vertices[2].y,triangle.vertices[2].z);
+
+    int xMin = std::min({top.x, middle.x, bottom.x});
+    int xMax = std::max({top.x, middle.x, bottom.x});
+    int yMin = std::min({top.y, middle.y, bottom.y});
+    int yMax = std::max({top.y, middle.y, bottom.y});
+
+    float triangleArea = (top.x * (middle.y - bottom.y) + middle.x * (bottom.y - top.y) + bottom.x * (top.y - middle.y));
+    for (int y = yMin; y <= yMax; y++) {
+        for (int x = xMin; x <= xMax; x++) {
+            float lambda1 = ((x * (middle.y - bottom.y) + middle.x * (bottom.y - y) + bottom.x * (y - middle.y)) / triangleArea);
+            float lambda2 = ((top.x * (y - bottom.y) + x * (bottom.y - top.y) + bottom.x * (top.y - y)) / triangleArea);
+            float lambda3 = 1.0f - lambda1 - lambda2;
+
+            if (lambda1 >= 0 && lambda2 >= 0 && lambda3 >= 0) {
+                float depth = top.z * lambda1 + middle.z * lambda2 + bottom.z * lambda3;
+                if (x >= 0 && y >= 0 && x < window.width && y < window.height && depth < depthBuffer[x][y]) {
+                    uint32_t colourVal = (255 << 24) + (input_colour.red << 16) + (input_colour.green << 8) + input_colour.blue;
+                    window.setPixelColour(x, y, colourVal);
+                    depthBuffer[x][y] = depth;
+                }
+            }
+        }
+    }
+}
+
 void Texturing(ModelTriangle triangle, TextureMap texture, DrawingWindow &window, vector<vector<float>>& depthBuffer) {
     if (triangle.vertices[0].y > triangle.vertices[1].y) swap(triangle.vertices[0], triangle.vertices[1]);
     if (triangle.vertices[0].y > triangle.vertices[2].y) swap(triangle.vertices[0], triangle.vertices[2]);
@@ -139,39 +176,6 @@ void Texturing(ModelTriangle triangle, TextureMap texture, DrawingWindow &window
     }
 }
 
-void rasterCalculate(ModelTriangle triangle, Colour input_colour, DrawingWindow &window, vector<vector<float>>& depthBuffer) {
-    if (triangle.vertices[0].y > triangle.vertices[1].y) swap(triangle.vertices[0], triangle.vertices[1]);
-    if (triangle.vertices[0].y > triangle.vertices[2].y) swap(triangle.vertices[0], triangle.vertices[2]);
-    if (triangle.vertices[1].y > triangle.vertices[2].y) swap(triangle.vertices[1], triangle.vertices[2]);
-
-    vec3 top = vec3(triangle.vertices[0].x,triangle.vertices[0].y,triangle.vertices[0].z);
-    vec3 middle = vec3(triangle.vertices[1].x,triangle.vertices[1].y,triangle.vertices[1].z);
-    vec3 bottom = vec3(triangle.vertices[2].x,triangle.vertices[2].y,triangle.vertices[2].z);
-
-    int xMin = std::min({top.x, middle.x, bottom.x});
-    int xMax = std::max({top.x, middle.x, bottom.x});
-    int yMin = std::min({top.y, middle.y, bottom.y});
-    int yMax = std::max({top.y, middle.y, bottom.y});
-
-    float triangleArea = (top.x * (middle.y - bottom.y) + middle.x * (bottom.y - top.y) + bottom.x * (top.y - middle.y));
-    for (int y = yMin; y <= yMax; y++) {
-        for (int x = xMin; x <= xMax; x++) {
-            float lambda1 = ((x * (middle.y - bottom.y) + middle.x * (bottom.y - y) + bottom.x * (y - middle.y)) / triangleArea);
-            float lambda2 = ((top.x * (y - bottom.y) + x * (bottom.y - top.y) + bottom.x * (top.y - y)) / triangleArea);
-            float lambda3 = 1.0f - lambda1 - lambda2;
-
-            if (lambda1 >= 0 && lambda2 >= 0 && lambda3 >= 0) {
-                float depth = top.z * lambda1 + middle.z * lambda2 + bottom.z * lambda3;
-                if (x >= 0 && y >= 0 && x < window.width && y < window.height && depth < depthBuffer[x][y]) {
-                    uint32_t colourVal = (255 << 24) + (input_colour.red << 16) + (input_colour.green << 8) + input_colour.blue;
-                    window.setPixelColour(x, y, colourVal);
-                    depthBuffer[x][y] = depth;
-                }
-            }
-        }
-    }
-}
-
 void Rasterising(ModelTriangle triangle, float focalLength, DrawingWindow &window, vector<vector<float>>& depthBuffer,float scaling_factor) {
     for (int i = 0; i < 3; ++i) {
         vec2 canvasPoint = getCanvasIntersectionPoint(triangle.vertices[i], focalLength, scaling_factor, window.width,window.height);
@@ -179,7 +183,7 @@ void Rasterising(ModelTriangle triangle, float focalLength, DrawingWindow &windo
         triangle.vertices[i] = vec3(canvasPoint.x, canvasPoint.y, -cameraSpaceVertex.z);
     }
     if (!triangle.colour.name.empty()) {
-        TextureMap texture = TextureMap("../" + triangle.colour.name);
+        TextureMap texture = TextureMap("" + triangle.colour.name);
         for (int i = 0; i < 3; ++i) {
             triangle.texturePoints[i].x *= texture.width;
             triangle.texturePoints[i].y *= texture.height;
@@ -203,7 +207,7 @@ void renderTexture(vector<ModelTriangle> triangles, float focalLength, DrawingWi
 
     for (ModelTriangle& triangle : triangles) {
         if (!triangle.colour.name.empty()) {
-            TextureMap texture = TextureMap("../" + triangle.colour.name);
+            TextureMap texture = TextureMap("" + triangle.colour.name);
             for (int i = 0; i < 3; ++i) {
                 triangle.texturePoints[i].x *= texture.width;
                 triangle.texturePoints[i].y *= texture.height;
@@ -390,9 +394,8 @@ float is_shadow(RayTriangleIntersection intersection, vector<ModelTriangle> &tri
     }
     return 0.0f;
 }
-
 vector<vec3> getcircleLights() {
-    int numLights = 15;
+    int numLights = 1;
     float radius = 0.05f;
     for (int i = 0; i < numLights; ++i) {
         float angle = 2 * M_PI * i / numLights;
@@ -777,12 +780,12 @@ void switchModes(DrawingWindow &window,SDL_Event event){
     float translationAmount = 0.1f;
     float scalingFactor = 0.35f;
     float focalLength = 2.0f;
-    vector<ModelTriangle> wireFrameTriangle = loadObjFile("../cornell-box.obj",scalingFactor,loadMtlFile("../cornell-box.mtl"));
-    vector<ModelTriangle> filledTriangle = loadObjFile("../cornell-box.obj",scalingFactor,loadMtlFile("../cornell-box.mtl"));
-    vector<ModelTriangle> mirrorTriangle =  loadObjFile("../rabbit.obj",scalingFactor,loadMtlFile("../cornell-box.mtl"));
-    vector<ModelTriangle> sphere = loadObjFile("../Sphere.obj",scalingFactor,loadMtlFile("../cornell-box.mtl"));
-    vector<ModelTriangle> textureTriangle = loadObjFile("../textured-cornell-box.obj",scalingFactor,loadMtlFile("../textured-cornell-box.mtl"));
-    vector<ModelTriangle> logoTriangle = loadObjFile("../logo.obj", scalingFactor,loadMtlFile("../materials.mtl"));
+    vector<ModelTriangle> wireFrameTriangle = loadObjFile("cornell-box.obj",scalingFactor,loadMtlFile("cornell-box.mtl"));
+    vector<ModelTriangle> filledTriangle = loadObjFile("cornell-box.obj",scalingFactor,loadMtlFile("cornell-box.mtl"));
+    vector<ModelTriangle> mirrorTriangle =  loadObjFile("cornell-box3.obj",scalingFactor,loadMtlFile("cornell-box.mtl"));
+    vector<ModelTriangle> sphere = loadObjFile("Sphere.obj",scalingFactor,loadMtlFile("cornell-box.mtl"));
+    vector<ModelTriangle> textureTriangle = loadObjFile("textured-cornell-box.obj",scalingFactor,loadMtlFile("textured-cornell-box.mtl"));
+    vector<ModelTriangle> logoTriangle = loadObjFile("logo.obj", scalingFactor,loadMtlFile("materials.mtl"));
 
     if (event.type == SDL_KEYDOWN) {
         // Camera translation
@@ -792,6 +795,14 @@ void switchModes(DrawingWindow &window,SDL_Event event){
         else if (event.key.keysym.sym == SDLK_s) cameraPosition.y += translationAmount;
         else if (event.key.keysym.sym == SDLK_q) cameraPosition.z += translationAmount;
         else if (event.key.keysym.sym == SDLK_e) cameraPosition.z -= translationAmount;
+
+        // light tranlation
+        if (event.key.keysym.sym == SDLK_x) BoxLight.x += translationAmount;
+        else if (event.key.keysym.sym == SDLK_z) BoxLight.x -= translationAmount;
+        else if (event.key.keysym.sym == SDLK_b) BoxLight.y -= translationAmount;
+        else if (event.key.keysym.sym == SDLK_n) BoxLight.y += translationAmount;
+        else if (event.key.keysym.sym == SDLK_c) BoxLight.z += translationAmount;
+        else if (event.key.keysym.sym == SDLK_v) BoxLight.z -= translationAmount;
 
         //Camera rotation
         if (event.key.keysym.sym == SDLK_UP) {
@@ -890,16 +901,16 @@ void switchModes(DrawingWindow &window,SDL_Event event){
     window.clearPixels();
     switch (currentRenderMode) {
         case RENDER_WIREFRAME:
-            renderWireframe(wireFrameTriangle,window,focalLength,300.0f);
+            renderWireframe(wireFrameTriangle,window,focalLength,400.0f);
             break;
         case RENDER_RASTERISED:
-            renderRasterising(filledTriangle,focalLength,window,300.0f);
+            renderRasterising(filledTriangle,focalLength,window,400.0f);
             break;
         case RENDER_Texture:
-            renderRasterising(textureTriangle,focalLength,window,300.0f);
+            renderRasterising(textureTriangle,focalLength,window,350.0f);
             break;
         case RENDER_RayTRACED:
-            renderRayTracedScene(calculateVertexNormals(mirrorTriangle),window,focalLength,180.0f);
+            renderRayTracedScene(calculateVertexNormals(mirrorTriangle),window,focalLength,200.0f);
             break;
 //        case RENDER_FlatSphere:
 //            renderFlatSphere(sphere,window,focalLength,300.0f);
@@ -917,14 +928,18 @@ void switchModes(DrawingWindow &window,SDL_Event event){
     }
 }
 
-void renderFrame(vector<ModelTriangle> triangles, DrawingWindow &window, float focalLength) {
+void renderFrame(DrawingWindow &window, float focalLength) {
     int frameCount = 96;
     int n_zero = 5;
+    vec3 finalCameraPosition;
+
+//    vector<ModelTriangle> mirrorTriangle2 =  loadObjFile("cornell-box.obj",0.35f,loadMtlFile("cornell-box.mtl"));
+
 //    for (int frame = 0; frame < frameCount; ++frame) {
 //        draw(window);
-//        renderWireframe(triangles, window, focalLength, 400.0f);
+//        renderRasterising(mirrorTriangle2,focalLength,window,400.0f);
 //        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
-//        window.savePPM("../output/" + frameNumber + ".ppm");
+//        window.savePPM("output14/" + frameNumber + ".ppm");
 //        cout << "saved " << frame << endl;
 //        float speed = -3.8 * M_PI / 180;
 //        cameraPosition = cameraPosition * mat3(
@@ -943,7 +958,7 @@ void renderFrame(vector<ModelTriangle> triangles, DrawingWindow &window, float f
 //        draw(window);
 //        renderRasterising(triangles, focalLength, window, 400.0f);
 //        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
-//        window.savePPM("../output3/" + frameNumber + ".ppm");
+//        window.savePPM("output3/" + frameNumber + ".ppm");
 //        cout << "saved " << frame << endl;
 //        if(frame < 12) {
 //            cameraPosition.x -= 0.06;
@@ -960,7 +975,7 @@ void renderFrame(vector<ModelTriangle> triangles, DrawingWindow &window, float f
 //        draw(window);
 //        renderRasterising(triangles, focalLength, window, 400.0f);
 //        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
-//        window.savePPM("../output4/" + frameNumber + ".ppm");
+//        window.savePPM("output4/" + frameNumber + ".ppm");
 //        cout << "saved " << frame << endl;
 //        if(frame < 12) {
 //            cameraPosition.y -= 0.06;
@@ -976,17 +991,81 @@ void renderFrame(vector<ModelTriangle> triangles, DrawingWindow &window, float f
 //        draw(window);
 //        renderRasterising(triangles, focalLength, window, 400.0f);
 //        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
-//        window.savePPM("../output2/" + frameNumber + ".ppm");
+//        window.savePPM("output2/" + frameNumber + ".ppm");
 //        cout << "saved " << frame << endl;
 //        if(frame < 12) {
-//            cameraPosition.z -= 0.06;
+//            cameraPosition.z += 0.06;
 //        }
 //        else if(frame < 36) {
-//            cameraPosition.z += 0.06;
+//            cameraPosition.z -= 0.06;
 //        }
 //        else if(frame < 48) {
 //            cameraPosition.z -= 0.06;
 //        }
+//    }
+
+//    for (int frame = 0; frame < frameCount; ++frame) {
+//        draw(window);
+//        renderRayTracedScene(triangles2,window,focalLength,400.0f);
+//        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
+//        window.savePPM("output8/" + frameNumber + ".ppm");
+//        cout << "saved " << frame << endl;
+//        cameraPosition.x -= 0.005f;
+//        cameraPosition.z -= 0.02f;
+//        cameraPosition.y += 0.004f;
+//    }
+//    vector<ModelTriangle> mirrorTriangle2 =  loadObjFile("cornell-box2.obj",0.35f,loadMtlFile("cornell-box.mtl"));
+//    vector<ModelTriangle> mirrorTriangle3 =  loadObjFile("cornell-box3.obj",0.35f,loadMtlFile("cornell-box.mtl"));
+//    for (int frame = 0; frame < 48; ++frame) {
+//        draw(window);
+//        renderRayTracedScene(calculateVertexNormals(mirrorTriangle2),window,focalLength,400.0f);
+//        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
+//        window.savePPM("output9/" + frameNumber + ".ppm");
+//        cout << "saved " << frame << endl;
+//        cameraPosition.y -= 0.02f;
+//    }
+//    for (int frame = 0; frame < 48; ++frame) {
+//        draw(window);
+//        renderRayTracedScene(calculateVertexNormals(mirrorTriangle2),window,focalLength,400.0f);
+//        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
+//        window.savePPM("output10/" + frameNumber + ".ppm");
+//        cout << "saved " << frame << endl;
+//        cameraPosition.x += 0.02f;
+//    }
+//    for (int frame = 0; frame < 48; ++frame) {
+//        draw(window);
+//        renderRayTracedScene(calculateVertexNormals(mirrorTriangle2),window,focalLength,400.0f);
+//        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
+//        window.savePPM("output11/" + frameNumber + ".ppm");
+//        cout << "saved " << frame << endl;
+//        cameraPosition.y += 0.02f;
+//    }
+//    cameraPosition = vec3(0.096f, 0.0f, 6.8f);
+//    for (int frame = 0; frame < 48; ++frame) {
+//        draw(window);
+//        renderRayTracedScene(calculateVertexNormals(mirrorTriangle2),window,focalLength,400.0f);
+//        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
+//        window.savePPM("output12/" + frameNumber + ".ppm");
+//        cout << "saved " << frame << endl;
+//        cameraPosition.z += 0.10f;
+//        cameraPosition.y -= 0.008f;
+//        cameraPosition.x -= 0.008f;
+//    }
+//    for (int frame = 0; frame < 48; ++frame) {
+//        draw(window);
+//        renderRayTracedScene(calculateVertexNormals(mirrorTriangle2),window,focalLength,400.0f);
+//        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
+//        window.savePPM("output15/" + frameNumber + ".ppm");
+//        cout << "saved " << frame << endl;
+//        cameraPosition.z -= 0.08f;
+//    }
+//    for (int frame = 0; frame < 48; ++frame) {
+//        draw(window);
+//        renderRayTracedScene(calculateVertexNormals(mirrorTriangle3),window,focalLength,400.0f);
+//        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
+//        window.savePPM("output16/" + frameNumber + ".ppm");
+//        cout << "saved " << frame << endl;
+//        cameraPosition.z -= 0.05f;
 //    }
 }
 
@@ -994,16 +1073,21 @@ int main(int argc, char *argv[]) {
 	DrawingWindow window = DrawingWindow(WIDTH, HEIGHT, false);
 	SDL_Event event;
 
-//    vector<ModelTriangle> wireFrameTriangle = loadObjFile("../textured-cornell-box.obj",0.35f,loadMtlFile("../cornell-box.mtl"));
-//    vector<ModelTriangle> mirrorTriangle =  loadObjFile("../rabbit.obj",0.35f,loadMtlFile("../cornell-box.mtl"));
-//    renderFrame(calculateVertexNormals(mirrorTriangle),window,2.0f);
+//    vector<ModelTriangle> wireFrameTriangle = loadObjFile("cornell-box.obj",0.35f,loadMtlFile("cornell-box.mtl"));
+
+//    vector<ModelTriangle> mirrorTriangle3 =  loadObjFile("cornell-box3.obj",0.35f,loadMtlFile("cornell-box.mtl"));
+//    vector<ModelTriangle> mirrorTriangle2 =  loadObjFile("cornell-box2.obj",0.35f,loadMtlFile("cornell-box.mtl"));
+//    renderFrame(window,2.0f);
 //    renderFrame(wireFrameTriangle,window,2.0f);
 
 	while (true) {
-		// We MUST poll for events - otherwise the window will freeze !
+
+        //
+        vector<ModelTriangle> box =  loadObjFile("cornell-box3.obj",0.35f,loadMtlFile("cornell-box.mtl"));
+        renderRayTracedScene(box,window,2.0f,200.0f);
 		if (window.pollForInputEvents(event)) handleEvent(event, window);
-        switchModes(window,event);
-        orbit();
+//        switchModes(window,event);
+//        orbit();
 //		draw(window);
 		window.renderFrame();
 	}

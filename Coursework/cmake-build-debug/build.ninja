@@ -129,7 +129,7 @@ build CMakeFiles/RedNoise.dir/src/RedNoise.cpp.o: CXX_COMPILER__RedNoise_unscann
 
 build RedNoise: CXX_EXECUTABLE_LINKER__RedNoise_Debug CMakeFiles/RedNoise.dir/libs/sdw/CanvasPoint.cpp.o CMakeFiles/RedNoise.dir/libs/sdw/CanvasTriangle.cpp.o CMakeFiles/RedNoise.dir/libs/sdw/Colour.cpp.o CMakeFiles/RedNoise.dir/libs/sdw/DrawingWindow.cpp.o CMakeFiles/RedNoise.dir/libs/sdw/ModelTriangle.cpp.o CMakeFiles/RedNoise.dir/libs/sdw/RayTriangleIntersection.cpp.o CMakeFiles/RedNoise.dir/libs/sdw/TextureMap.cpp.o CMakeFiles/RedNoise.dir/libs/sdw/TexturePoint.cpp.o CMakeFiles/RedNoise.dir/libs/sdw/Utils.cpp.o CMakeFiles/RedNoise.dir/src/RedNoise.cpp.o | /opt/homebrew/Cellar/sdl2/2.28.5/lib/libSDL2.dylib
   FLAGS = -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk
-  LINK_LIBRARIES = -Wl,-rpath,/opt/homebrew/Cellar/sdl2/2.28.5/lib  -Wl  /opt/homebrew/Cellar/sdl2/2.28.5/lib/libSDL2.dylib
+  LINK_LIBRARIES = -Wl,-rpath,/opt/homebrew/Cellar/sdl2/2.28.5/lib  -Wl,-lasan  /opt/homebrew/Cellar/sdl2/2.28.5/lib/libSDL2.dylib
   LINK_PATH = -L/opt/homebrew/Cellar/sdl2/2.28.5/lib
   OBJECT_DIR = CMakeFiles/RedNoise.dir
   POST_BUILD = :
