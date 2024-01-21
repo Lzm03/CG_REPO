@@ -3,7 +3,7 @@
 Welcome to the Computer Graphics course for 2023!
 
 ## Course Overview
-This course （<a href="https://github.com/drslock/CG2020/tree/master/Weekly%20Workbooks">Weekly Workbooks</a>） aims to equip students with the fundamental concepts and skills in computer graphics through a series of progressive weekly assignments. Here's an overview of each week's focus:
+This course （<a href="https://github.com/drslock/CG2023/tree/master/Weekly%20Workbooks">Weekly Workbooks</a>） aims to equip students with the fundamental concepts and skills in computer graphics through a series of progressive weekly assignments. Here's an overview of each week's focus:
 
 ### Week 1: RedNoise
 - **Topic**: Template project to test `SDL`.
